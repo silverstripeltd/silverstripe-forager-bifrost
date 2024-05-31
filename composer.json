@@ -1,0 +1,44 @@
+{
+    "name": "silverstripeltd/search-service-bifrost",
+    "description": "A Silverstripe Bifröst add-on for silverstripe/silverstripe-search-service",
+    "type": "silverstripe-vendormodule",
+    "license": "proprietary",
+    "homepage": "https://github.com/silverstripeltd/search-service-bifrost",
+    "authors": [],
+    "keywords": [
+        "Silverstripe",
+        "Silverstripe CMS",
+        "Search",
+        "Bifröst"
+    ],
+    "require": {
+        "php": "^8.1",
+        "silverstripe/framework": "^5",
+        "silverstripe/silverstripe-search-service": "^3",
+        "elastic/enterprise-search": "^8.6",
+        "guzzlehttp/guzzle": "^7"
+    },
+    "require-dev": {
+        "silverstripe/recipe-cms": "^5",
+        "phpunit/phpunit": "^9.5",
+        "slevomat/coding-standard": "^8.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "SilverStripe\\SearchServiceBifrost\\": "src/",
+            "SilverStripe\\SearchServiceBifrost\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "php-http/discovery": true,
+            "silverstripe/vendor-plugin": true,
+            "silverstripe/recipe-plugin": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "scripts": {
+        "phpcs": "phpcs --standard=phpcs.xml --extensions=php --encoding=utf-8"
+    }
+}
