@@ -1,0 +1,10 @@
+---
+Name: search-service-bifrost-extensions
+---
+SilverStripe\Assets\File:
+    extensions:
+        SearchServiceBifrostFileExtension: SilverStripe\SearchServiceBifrost\Extensions\FileExtension
+
+SilverStripe\AssetAdmin\Forms\FileFormFactory:
+    extensions:
+        SearchServiceBifrostFileFormExtension: SilverStripe\SearchServiceBifrost\Extensions\FileFormExtension
