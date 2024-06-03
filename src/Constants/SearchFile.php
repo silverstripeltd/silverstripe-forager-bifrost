@@ -21,7 +21,7 @@ final class SearchFile
     public static function sizeLimit(): string
     {
         # Calculation taken from File::format_size()
-        return round((self::SIZE_LIMIT / (1024 * 1024)) * 10) / 10 . ' MB';
+        return round((self::SIZE_LIMIT / 1024 / 1024) * 10) / 10 . ' MB';
     }
 
     public static function exceedsContentLimit(File $file): bool
