@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\SearchServiceElastic\Service;
+namespace SilverStripe\SearchServiceBifrost\Service;
 
 use Elastic\EnterpriseSearch\Client;
 use Exception;
@@ -15,7 +15,7 @@ use SilverStripe\SearchService\Service\DocumentBuilder;
 use SilverStripe\SearchService\Service\IndexConfiguration;
 use SilverStripe\SearchService\Service\Traits\ConfigurationAware;
 
-class EnterpriseSearchService implements IndexingInterface, BatchDocumentRemovalInterface
+class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
 {
 
     use Configurable;
@@ -174,14 +174,14 @@ class EnterpriseSearchService implements IndexingInterface, BatchDocumentRemoval
         return $this->builder;
     }
 
-    private function setClient(Client $client): EnterpriseSearchService
+    private function setClient(Client $client): static
     {
         $this->client = $client;
 
         return $this;
     }
 
-    private function setBuilder(DocumentBuilder $builder): EnterpriseSearchService
+    private function setBuilder(DocumentBuilder $builder): static
     {
         $this->builder = $builder;
 
