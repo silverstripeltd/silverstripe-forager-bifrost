@@ -35,15 +35,17 @@ class FileFormExtension extends Extension
             return;
         }
 
-        $fields->unshift($this->createFileLimitMessage($file));
-
         $warningMessage = $this->createLargeFileWarning($file);
 
-        if (!$warningMessage) {
+        if ($warningMessage) {
+            // Add the warning message, and return before the notice is added (as it has duplicate content)
+            $fields->unshift($warningMessage);
+
             return;
         }
 
-        $fields->unshift($warningMessage);
+        // If there isn't a warning message, then we'll add the general notice instead
+        $fields->unshift($this->createFileLimitMessage($file));
     }
 
     private function createFileLimitMessage(File $file): LiteralField
@@ -56,7 +58,9 @@ class FileFormExtension extends Extension
                 _t(
                     self::class . '.FILE_LIMIT_MESSAGE',
                     'Document search extraction limit is {limit}',
-                    ['limit' => SearchFile::sizeLimit()]
+                    [
+                        'limit' => SearchFile::sizeLimit(),
+                    ]
                 )
             )
         );
@@ -74,8 +78,11 @@ class FileFormExtension extends Extension
                     ['class' => 'alert alert-warning'],
                     _t(
                         self::class . '.LARGE_FILE_WARNING',
-                        'File size is {size} which exceeds the search extraction limit',
-                        ['size' => $file->getSize()]
+                        'File size is {size} which exceeds the search extraction limit of {limit}',
+                        [
+                            'size' => $file->getSize(),
+                            'limit' => SearchFile::sizeLimit(),
+                        ]
                     )
                 )
             );

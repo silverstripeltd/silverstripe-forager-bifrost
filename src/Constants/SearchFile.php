@@ -3,7 +3,6 @@
 namespace SilverStripe\SearchServiceBifrost\Constants;
 
 use SilverStripe\Assets\File;
-use SilverStripe\Core\Convert;
 
 /**
  * By design this must not implement the Silverstripe Config API in order to prevent sending large files to the ingest
@@ -14,14 +13,15 @@ use SilverStripe\Core\Convert;
 final class SearchFile
 {
 
-    /*
-     * Note: Initial limit in bytes and to be changed
+    /**
+     * File size limit in bytes
      */
-    public const SIZE_LIMIT = 5242880;
+    public const SIZE_LIMIT = 5 * 1024 * 1024;
 
     public static function sizeLimit(): string
     {
-        return Convert::bytes2memstring(self::SIZE_LIMIT);
+        # Calculation taken from File::format_size()
+        return round((self::SIZE_LIMIT / (1024 * 1024)) * 10) / 10 . ' MB';
     }
 
     public static function exceedsContentLimit(File $file): bool
