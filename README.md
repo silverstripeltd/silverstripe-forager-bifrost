@@ -9,7 +9,7 @@ Add the following to your `composer.json`:
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@github.com:silverstripeltd/search-service-elasticsearch.git"
+            "url": "git@github.com:silverstripeltd/search-service-bifrost.git"
         }
     ]
 }
@@ -57,9 +57,6 @@ SilverStripe\SearchService\Service\IndexConfiguration:
               options:
                 type: text
 ```
-
-**Note**: Be careful about whimsically changing your schema. Your index will need to be fully reindexed if you change
-the data type of a field.
 
 ## Additional documentation
 

@@ -1,7 +1,5 @@
 ---
 Name: search-service-bifrost
-Only:
-    envvarset: 'BIFROST_PRIVATE_API_KEY'
 After:
     - 'silverstripe-search-service-dataobject'
     - 'search-service-default'
@@ -12,17 +10,14 @@ SilverStripe\Core\Injector\Injector:
             index_variant: '`BIFROST_ENGINE_PREFIX`'
     SilverStripe\SearchService\Interfaces\IndexingInterface:
         class: SilverStripe\SearchServiceBifrost\Service\BifrostService
-        constructor:
-            client: '%$Elastic\EnterpriseSearch\Client'
-            configuration: '%$SilverStripe\SearchService\Service\IndexConfiguration'
-            builder: '%$SilverStripe\SearchService\Service\DocumentBuilder'
-    Elastic\EnterpriseSearch\Client:
+    Elastic\EnterpriseSearch\Client.indexingInterface:
         factory: SilverStripe\SearchServiceBifrost\Service\ClientFactory
         constructor:
             host: '`BIFROST_ENDPOINT`'
             token: '`BIFROST_PRIVATE_API_KEY`'
             http_client: '%$GuzzleHttp\Client'
 
+## customise the dataobject fields for Bifrost compatability
 SilverStripe\SearchService\DataObject\DataObjectDocument:
     id_field: record_id
     base_class_field: record_base_class

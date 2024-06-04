@@ -4,6 +4,7 @@ namespace SilverStripe\SearchServiceBifrost\Service;
 
 use Elastic\EnterpriseSearch\Client;
 use Exception;
+use Psr\Log\LoggerInterface;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injectable;
@@ -28,13 +29,34 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
 
     private DocumentBuilder $builder;
 
+    private ?LoggerInterface $logger = null;
+
     private static int $max_document_size = 102400;
 
-    public function __construct(Client $client, IndexConfiguration $configuration, DocumentBuilder $exporter)
+    private static array $dependencies = [
+        'client' => '%$' . Client::class . '.indexingInterface',
+        'configuration' => '%$' . IndexConfiguration::class,
+        'builder' => '%$' . DocumentBuilder::class,
+        'logger' => '%$' . LoggerInterface::class . '.errorhandler',
+    ];
+
+    public function setClient(Client $client): static
     {
-        $this->setClient($client);
-        $this->setConfiguration($configuration);
-        $this->setBuilder($exporter);
+        $this->client = $client;
+
+        return $this;
+    }
+
+    public function setBuilder(DocumentBuilder $builder): static
+    {
+        $this->builder = $builder;
+
+        return $this;
+    }
+
+    public function setLogger(?LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     public function environmentizeIndex(string $indexName): string
@@ -162,30 +184,6 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
                 $field
             ));
         }
-    }
-
-    public function getClient(): Client
-    {
-        return $this->client;
-    }
-
-    public function getBuilder(): DocumentBuilder
-    {
-        return $this->builder;
-    }
-
-    private function setClient(Client $client): static
-    {
-        $this->client = $client;
-
-        return $this;
-    }
-
-    private function setBuilder(DocumentBuilder $builder): static
-    {
-        $this->builder = $builder;
-
-        return $this;
     }
 
 }
