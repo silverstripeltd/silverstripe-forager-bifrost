@@ -14,8 +14,8 @@
     "require": {
         "php": "^8.1",
         "silverstripe/framework": "^5",
-        "silverstripe/silverstripe-search-service": "^3",
-        "elastic/enterprise-search": "^8.6",
+        "silverstripe/reports": "^5",
+        "silverstripe/silverstripe-search-service-elastic": "^1.1.0",
         "guzzlehttp/guzzle": "^7"
     },
     "require-dev": {
