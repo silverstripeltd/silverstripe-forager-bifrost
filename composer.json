@@ -15,7 +15,7 @@
         "php": "^8.1",
         "silverstripe/framework": "^5",
         "silverstripe/reports": "^5",
-        "silverstripe/silverstripe-search-service-elastic": "^1",
+        "silverstripe/silverstripe-search-service-elastic": "dev-feature/injectable-request-classes",
         "guzzlehttp/guzzle": "^7"
     },
     "require-dev": {
@@ -23,6 +23,12 @@
         "phpunit/phpunit": "^9.5",
         "slevomat/coding-standard": "^8.8"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:silverstripeltd/silverstripe-search-service-elastic.git"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "SilverStripe\\SearchServiceBifrost\\": "src/",
