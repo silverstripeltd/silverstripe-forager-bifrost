@@ -1,7 +1,7 @@
 ---
 Name: search-service-bifrost
 Only:
-  envvarset: 'BIFROST_PRIVATE_API_KEY'
+  envvarset: 'BIFROST_MANAGEMENT_API_KEY'
 After:
   - 'silverstripe-search-service-dataobject'
   - 'search-service-default'
@@ -20,7 +20,7 @@ SilverStripe\Core\Injector\Injector:
     factory: SilverStripe\SearchServiceBifrost\Service\ClientFactory
     constructor:
       host: '`BIFROST_ENDPOINT`'
-      token: '`BIFROST_PRIVATE_API_KEY`'
+      token: '`BIFROST_MANAGEMENT_API_KEY`'
       http_client: '%$GuzzleHttp\Client'
   Elastic\EnterpriseSearch\AppSearch\Request\GetSchema:
     class: SilverStripe\SearchServiceBifrost\Service\Requests\GetSchema
