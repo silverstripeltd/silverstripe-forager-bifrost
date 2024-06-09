@@ -1,5 +1,12 @@
 # silverstripeltd/search-service-bifrost
 
+Integrate your Silverstripe CMS with Silverstripe's search service.
+
+## Other modules
+
+* [Add support for querying](https://github.com/silverstripeltd/discoverer-bifrost)
+* [Default theme for search form interfaces](https://github.com/silverstripeltd/discoverer-theme)
+
 ## Installation
 
 Add the following to your `composer.json`:
