@@ -21,7 +21,7 @@ class ClientFactory implements Factory
         if (!$host || !$token) {
             throw new Exception(sprintf(
                 'The %s implementation requires environment variables: ' .
-                'BIFROST_ENDPOINT and BIFROST_PRIVATE_API_KEY',
+                'BIFROST_ENDPOINT and BIFROST_MANAGEMENT_API_KEY',
                 Client::class
             ));
         }

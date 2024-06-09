@@ -36,7 +36,7 @@ private API key.
 ```
 BIFROST_ENDPOINT="https://abc123.app-search.ap-southeast-2.aws.found.io:443"
 BIFROST_ENGINE_PREFIX="index-name-excluding-variant"
-BIFROST_PRIVATE_API_KEY="APIKEY123"
+BIFROST_MANAGEMENT_API_KEY="APIKEY123"
 ```
 
 ## Configuration
