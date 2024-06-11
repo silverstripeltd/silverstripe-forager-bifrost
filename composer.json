@@ -2,9 +2,14 @@
     "name": "silverstripeltd/search-service-bifrost",
     "description": "A Silverstripe Bifröst add-on for silverstripe/silverstripe-search-service",
     "type": "silverstripe-vendormodule",
-    "license": "proprietary",
+    "license": "BSD-3-Clause",
     "homepage": "https://github.com/silverstripeltd/search-service-bifrost",
-    "authors": [],
+    "authors": [
+        {
+            "name": "Christopher David Penny",
+            "email": "chris.penny@gmail.com"
+        }
+    ],
     "keywords": [
         "Silverstripe",
         "Silverstripe CMS",
