@@ -7,15 +7,15 @@ After:
   - 'search-forager-default'
 ---
 SilverStripe\Core\Injector\Injector:
-  SilverStripe\SearchService\Service\IndexConfiguration:
+  SilverStripe\Forager\Service\IndexConfiguration:
     constructor:
       index_variant: '`BIFROST_ENGINE_PREFIX`'
-  SilverStripe\SearchService\Interfaces\IndexingInterface:
+  SilverStripe\Forager\Interfaces\IndexingInterface:
     class: SilverStripe\ForagerBifrost\Service\BifrostService
     constructor:
       client: '%$Elastic\EnterpriseSearch\Client'
-      configuration: '%$SilverStripe\SearchService\Service\IndexConfiguration'
-      builder: '%$SilverStripe\SearchService\Service\DocumentBuilder'
+      configuration: '%$SilverStripe\Forager\Service\IndexConfiguration'
+      builder: '%$SilverStripe\Forager\Service\DocumentBuilder'
   Elastic\EnterpriseSearch\Client:
     factory: SilverStripe\ForagerBifrost\Service\ClientFactory
     constructor:
@@ -26,7 +26,7 @@ SilverStripe\Core\Injector\Injector:
     class: SilverStripe\ForagerBifrost\Service\Requests\GetSchema
 
 ## customise the dataobject fields for Bifrost compatability
-SilverStripe\SearchService\DataObject\DataObjectDocument:
+SilverStripe\Forager\DataObject\DataObjectDocument:
   id_field: record_id
   base_class_field: record_base_class
   page_content_field: page_content
