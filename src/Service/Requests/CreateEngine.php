@@ -8,7 +8,7 @@ use Elastic\EnterpriseSearch\AppSearch\Schema\Engine;
 class CreateEngine extends AppSearchCreateEngine
 {
 
-    public function __construct(Engine $engine = null)
+    public function __construct(?Engine $engine = null)
     {
         parent::__construct($engine);
 

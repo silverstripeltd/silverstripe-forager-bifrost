@@ -11,7 +11,7 @@ use Elastic\EnterpriseSearch\AppSearch\Schema\SchemaUpdateRequest;
 class PostSchema extends AppSearchPutSchema
 {
 
-    public function __construct(string $engineName, SchemaUpdateRequest $schema = null)
+    public function __construct(string $engineName, ?SchemaUpdateRequest $schema = null)
     {
         parent::__construct($engineName, $schema);
 
