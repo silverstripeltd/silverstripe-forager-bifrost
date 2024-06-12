@@ -1,11 +1,11 @@
 <?php
 
-namespace SilverStripe\SearchServiceBifrost\Tests\Constants;
+namespace SilverStripe\ForagerBifrost\Tests\Constants;
 
 use SilverStripe\Assets\Dev\TestAssetStore;
 use SilverStripe\Assets\File;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\SearchServiceBifrost\Constants\SearchFile;
+use SilverStripe\ForagerBifrost\Constants\SearchFile;
 
 class SearchFileTest extends SapphireTest
 {

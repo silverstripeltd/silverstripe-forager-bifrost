@@ -1,29 +1,29 @@
 ---
-Name: search-service-bifrost
+Name: forager-bifrost
 Only:
   envvarset: 'BIFROST_MANAGEMENT_API_KEY'
 After:
-  - 'silverstripe-search-service-dataobject'
-  - 'search-service-default'
+  - 'silverstripe-forager-elastic-enterprise'
+  - 'search-forager-default'
 ---
 SilverStripe\Core\Injector\Injector:
   SilverStripe\SearchService\Service\IndexConfiguration:
     constructor:
       index_variant: '`BIFROST_ENGINE_PREFIX`'
   SilverStripe\SearchService\Interfaces\IndexingInterface:
-    class: SilverStripe\SearchServiceBifrost\Service\BifrostService
+    class: SilverStripe\ForagerBifrost\Service\BifrostService
     constructor:
       client: '%$Elastic\EnterpriseSearch\Client'
       configuration: '%$SilverStripe\SearchService\Service\IndexConfiguration'
       builder: '%$SilverStripe\SearchService\Service\DocumentBuilder'
   Elastic\EnterpriseSearch\Client:
-    factory: SilverStripe\SearchServiceBifrost\Service\ClientFactory
+    factory: SilverStripe\ForagerBifrost\Service\ClientFactory
     constructor:
       host: '`BIFROST_ENDPOINT`'
       token: '`BIFROST_MANAGEMENT_API_KEY`'
       http_client: '%$GuzzleHttp\Client'
   Elastic\EnterpriseSearch\AppSearch\Request\GetSchema:
-    class: SilverStripe\SearchServiceBifrost\Service\Requests\GetSchema
+    class: SilverStripe\ForagerBifrost\Service\Requests\GetSchema
 
 ## customise the dataobject fields for Bifrost compatability
 SilverStripe\SearchService\DataObject\DataObjectDocument:

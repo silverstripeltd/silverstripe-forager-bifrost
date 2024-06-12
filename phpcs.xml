@@ -158,7 +158,7 @@
     <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
         <properties>
             <!-- Set the root namespace for our src dir and phpunit dir. Please change these as required -->
-            <property name="rootNamespaces" type="array" value="src=>SilverStripe\SearchServiceBifrost,tests=>SilverStripe\SearchServiceBifrost\Tests"/>
+            <property name="rootNamespaces" type="array" value="src=>SilverStripe\ForagerBifrost,tests=>SilverStripe\ForagerBifrost\Tests"/>
             <property name="ignoredNamespaces" type="array" value="Slevomat\Services"/>
         </properties>
     </rule>

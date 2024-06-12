@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\SearchServiceBifrost\Constants;
+namespace SilverStripe\ForagerBifrost\Constants;
 
 use SilverStripe\Assets\File;
 

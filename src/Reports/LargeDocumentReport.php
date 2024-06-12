@@ -1,11 +1,11 @@
 <?php
 
-namespace SilverStripe\SearchServiceBifrost\Reports;
+namespace SilverStripe\ForagerBifrost\Reports;
 
 use SilverStripe\Assets\File;
 use SilverStripe\ORM\SS_List;
 use SilverStripe\Reports\Report;
-use SilverStripe\SearchServiceBifrost\Constants\SearchFile;
+use SilverStripe\ForagerBifrost\Constants\SearchFile;
 
 class LargeDocumentReport extends Report
 {

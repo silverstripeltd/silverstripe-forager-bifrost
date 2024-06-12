@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\SearchServiceBifrost\Service\Requests;
+namespace SilverStripe\ForagerBifrost\Service\Requests;
 
 use Elastic\EnterpriseSearch\AppSearch\Request\GetSchema as AppSearchGetSchema;
 

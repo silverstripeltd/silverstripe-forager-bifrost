@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\SearchServiceBifrost\Extensions;
+namespace SilverStripe\ForagerBifrost\Extensions;
 
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Image;
@@ -10,7 +10,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormFactory;
 use SilverStripe\Forms\LiteralField;
-use SilverStripe\SearchServiceBifrost\Constants\SearchFile;
+use SilverStripe\ForagerBifrost\Constants\SearchFile;
 use SilverStripe\View\HTML;
 
 class FileFormExtension extends Extension

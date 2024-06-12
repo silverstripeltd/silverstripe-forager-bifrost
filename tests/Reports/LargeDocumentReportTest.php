@@ -1,11 +1,11 @@
 <?php
 
-namespace SilverStripe\SearchServiceBifrost\Tests\Reports;
+namespace SilverStripe\ForagerBifrost\Tests\Reports;
 
 use SilverStripe\Assets\Dev\TestAssetStore;
 use SilverStripe\Assets\File;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\SearchServiceBifrost\Reports\LargeDocumentReport;
+use SilverStripe\ForagerBifrost\Reports\LargeDocumentReport;
 
 class LargeDocumentReportTest extends SapphireTest
 {

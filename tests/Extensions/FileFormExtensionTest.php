@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\SearchServiceBifrost\Tests\Extensions;
+namespace SilverStripe\ForagerBifrost\Tests\Extensions;
 
 use ReflectionMethod;
 use SilverStripe\Assets\Dev\TestAssetStore;
@@ -13,7 +13,7 @@ use SilverStripe\Forms\FormFactory;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
 use SilverStripe\Forms\TabSet;
-use SilverStripe\SearchServiceBifrost\Extensions\FileFormExtension;
+use SilverStripe\ForagerBifrost\Extensions\FileFormExtension;
 
 class FileFormExtensionTest extends SapphireTest
 {

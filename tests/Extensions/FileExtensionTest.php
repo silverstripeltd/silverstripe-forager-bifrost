@@ -1,12 +1,12 @@
 <?php
 
-namespace SilverStripe\SearchServiceBifrost\Tests\Extensions;
+namespace SilverStripe\ForagerBifrost\Tests\Extensions;
 
 use SilverStripe\Assets\Dev\TestAssetStore;
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\SearchServiceBifrost\Extensions\FileExtension;
+use SilverStripe\ForagerBifrost\Extensions\FileExtension;
 
 class FileExtensionTest extends SapphireTest
 {

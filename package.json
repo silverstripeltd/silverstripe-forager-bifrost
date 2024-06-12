@@ -1,7 +1,7 @@
 {
-    "name": "discoverer-bifrost",
-    "description": "A Silverstripe Bifröst add-on for silverstripe/silverstripe-search-service",
+    "name": "silverstripe-forager-bifrost",
+    "description": "A Silverstripe Bifröst add-on for silverstripe/silverstripe-forager",
     "main": "README.md",
-    "repository": "https://github.com/silverstripeltd/search-service-bifrost.git",
+    "repository": "https://github.com/silverstripeltd/silverstripe-forager-bifrost.git",
     "author": "Silverstripe Ltd"
 }
