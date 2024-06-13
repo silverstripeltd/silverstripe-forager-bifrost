@@ -6,11 +6,11 @@ use SilverStripe\Assets\File;
 use SilverStripe\Assets\Image;
 use SilverStripe\Control\RequestHandler;
 use SilverStripe\Core\Extension;
+use SilverStripe\ForagerBifrost\Constants\SearchFile;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormFactory;
 use SilverStripe\Forms\LiteralField;
-use SilverStripe\ForagerBifrost\Constants\SearchFile;
 use SilverStripe\View\HTML;
 
 class FileFormExtension extends Extension

@@ -24,7 +24,7 @@
         "guzzlehttp/guzzle": "^7"
     },
     "require-dev": {
-        "silverstripe/assets": "^2",
+        "silverstripe/recipe-cms": "^5",
         "phpunit/phpunit": "^9.6.19",
         "slevomat/coding-standard": "^8.8"
     },
@@ -57,20 +57,5 @@
     },
     "scripts": {
         "phpcs": "phpcs --standard=phpcs.xml --extensions=php --encoding=utf-8"
-    },
-    "extra": {
-        "project-files-installed": [
-            ".htaccess",
-            "app/.htaccess",
-            "app/_config/mimevalidator.yml",
-            "app/_config/mysite.yml",
-            "app/src/Page.php",
-            "app/src/PageController.php"
-        ],
-        "public-files-installed": [
-            ".htaccess",
-            "index.php",
-            "web.config"
-        ]
     }
 }
