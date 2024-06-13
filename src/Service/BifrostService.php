@@ -1,10 +1,10 @@
 <?php
 
-namespace SilverStripe\SearchServiceBifrost\Service;
+namespace SilverStripe\ForagerBifrost\Service;
 
 use SilverStripe\Core\Environment;
-use SilverStripe\SearchService\Exception\IndexConfigurationException;
-use SilverStripe\SearchServiceElastic\Service\EnterpriseSearchService;
+use SilverStripe\Forager\Exception\IndexConfigurationException;
+use SilverStripe\ForagerElasticEnterprise\Service\EnterpriseSearchService;
 
 class BifrostService extends EnterpriseSearchService
 {

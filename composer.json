@@ -1,9 +1,9 @@
 {
-    "name": "silverstripeltd/search-service-bifrost",
-    "description": "A Silverstripe Bifröst add-on for silverstripe/silverstripe-search-service",
+    "name": "silverstripe/silverstripe-forager-bifrost",
+    "description": "A Silverstripe Bifröst add-on for silverstripe/silverstripe-forager",
     "type": "silverstripe-vendormodule",
     "license": "BSD-3-Clause",
-    "homepage": "https://github.com/silverstripeltd/search-service-bifrost",
+    "homepage": "https://github.com/silverstripeltd/silverstripe-forager-bifrost",
     "authors": [
         {
             "name": "Christopher David Penny",
@@ -20,18 +20,30 @@
         "php": "^8.1",
         "silverstripe/framework": "^5",
         "silverstripe/reports": "^5",
-        "silverstripe/silverstripe-search-service-elastic": "^1.1.0",
+        "silverstripe/silverstripe-forager-elastic-enterprise": "1.x-dev",
         "guzzlehttp/guzzle": "^7"
     },
     "require-dev": {
         "silverstripe/recipe-cms": "^5",
-        "phpunit/phpunit": "^9.5",
+        "phpunit/phpunit": "^9.6.19",
         "slevomat/coding-standard": "^8.8"
     },
+    "repositories": {
+        "silverstripe/silverstripe-forager": {
+            "type": "git",
+            "url": "https://github.com/silverstripeltd/silverstripe-forager.git"
+        },
+        "silverstripe/silverstripe-forager-elastic-enterprise": {
+            "type": "git",
+            "url": "https://github.com/silverstripeltd/silverstripe-forager-elastic-enterprise.git"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "SilverStripe\\SearchServiceBifrost\\": "src/",
-            "SilverStripe\\SearchServiceBifrost\\Tests\\": "tests/"
+            "SilverStripe\\ForagerBifrost\\": "src/",
+            "SilverStripe\\ForagerBifrost\\Tests\\": "tests/"
         }
     },
     "config": {

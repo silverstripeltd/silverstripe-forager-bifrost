@@ -52,7 +52,7 @@ types of data supported:
 You can specify these data types in the `options` node of your fields.
 
 ```yaml
-SilverStripe\SearchService\Service\IndexConfiguration:
+SilverStripe\Forager\Service\IndexConfiguration:
   indexes:
     myindex:
       includeClasses:

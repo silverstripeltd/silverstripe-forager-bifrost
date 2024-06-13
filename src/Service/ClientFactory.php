@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\SearchServiceBifrost\Service;
+namespace SilverStripe\ForagerBifrost\Service;
 
 use Elastic\EnterpriseSearch\Client;
 use Exception;

@@ -1,13 +1,13 @@
 <?php
 
-namespace SilverStripe\SearchServiceBifrost\Extensions;
+namespace SilverStripe\ForagerBifrost\Extensions;
 
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
 use SilverStripe\Core\Convert;
+use SilverStripe\ForagerBifrost\Constants\SearchFile;
 use SilverStripe\ORM\DataExtension;
-use SilverStripe\SearchServiceBifrost\Constants\SearchFile;
 
 /**
  * @property int $ContentSize

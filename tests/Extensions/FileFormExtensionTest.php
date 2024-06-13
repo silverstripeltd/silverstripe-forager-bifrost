@@ -1,19 +1,19 @@
 <?php
 
-namespace SilverStripe\SearchServiceBifrost\Tests\Extensions;
+namespace SilverStripe\ForagerBifrost\Tests\Extensions;
 
 use ReflectionMethod;
 use SilverStripe\Assets\Dev\TestAssetStore;
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Image;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\ForagerBifrost\Extensions\FileFormExtension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormFactory;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
 use SilverStripe\Forms\TabSet;
-use SilverStripe\SearchServiceBifrost\Extensions\FileFormExtension;
 
 class FileFormExtensionTest extends SapphireTest
 {
