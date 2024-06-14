@@ -37,6 +37,11 @@ SilverStripe\Core\Injector\Injector:
   Elastic\EnterpriseSearch\AppSearch\Request\PutSchema:
     class: SilverStripe\ForagerBifrost\Service\Requests\PostSchema
 
+SilverStripe\ForagerElasticEnterprise\Service\EnterpriseSearchService:
+  # Append to existing valid_field_types definition
+  valid_field_types:
+    - 'binary'
+
 ## customise the dataobject fields for Bifrost compatability
 SilverStripe\Forager\DataObject\DataObjectDocument:
   id_field: record_id
