@@ -22,8 +22,25 @@ SilverStripe\Core\Injector\Injector:
       host: '`BIFROST_ENDPOINT`'
       token: '`BIFROST_MANAGEMENT_API_KEY`'
       http_client: '%$GuzzleHttp\Client'
+  Elastic\EnterpriseSearch\AppSearch\Request\CreateEngine:
+    class: SilverStripe\ForagerBifrost\Service\Requests\PostEngine
+  Elastic\EnterpriseSearch\AppSearch\Request\DeleteDocuments:
+    class: SilverStripe\ForagerBifrost\Service\Requests\DeleteDocuments
   Elastic\EnterpriseSearch\AppSearch\Request\GetSchema:
     class: SilverStripe\ForagerBifrost\Service\Requests\GetSchema
+  Elastic\EnterpriseSearch\AppSearch\Request\IndexDocuments:
+    class: SilverStripe\ForagerBifrost\Service\Requests\PostDocuments
+  Elastic\EnterpriseSearch\AppSearch\Request\ListDocuments:
+    class: SilverStripe\ForagerBifrost\Service\Requests\PostDocumentsList
+  Elastic\EnterpriseSearch\AppSearch\Request\ListEngines:
+    class: SilverStripe\ForagerBifrost\Service\Requests\GetEngines
+  Elastic\EnterpriseSearch\AppSearch\Request\PutSchema:
+    class: SilverStripe\ForagerBifrost\Service\Requests\PostSchema
+
+SilverStripe\ForagerElasticEnterprise\Service\EnterpriseSearchService:
+  # Append to existing valid_field_types definition
+  valid_field_types:
+    - 'binary'
 
 ## customise the dataobject fields for Bifrost compatability
 SilverStripe\Forager\DataObject\DataObjectDocument:

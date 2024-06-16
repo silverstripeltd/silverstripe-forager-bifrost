@@ -11,7 +11,7 @@ class GetSchema extends AppSearchGetSchema
     {
         parent::__construct($engineName);
 
-        $this->path = sprintf('/api/v1/%s/schema', $engineName);
+        $this->path = sprintf('/api/v1/%s/schema/', $engineName);
     }
 
 }
