@@ -4,7 +4,7 @@ namespace SilverStripe\ForagerBifrost\Service\Requests;
 
 use Elastic\EnterpriseSearch\AppSearch\Request\ListEngines as AppSearchListEngines;
 
-class ListEngines extends AppSearchListEngines
+class GetEngines extends AppSearchListEngines
 {
 
     public function __construct()

@@ -5,7 +5,7 @@ namespace SilverStripe\ForagerBifrost\Service\Requests;
 use Elastic\EnterpriseSearch\AppSearch\Request\CreateEngine as AppSearchCreateEngine;
 use Elastic\EnterpriseSearch\AppSearch\Schema\Engine;
 
-class CreateEngine extends AppSearchCreateEngine
+class PostEngine extends AppSearchCreateEngine
 {
 
     public function __construct(?Engine $engine = null)
