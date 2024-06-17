@@ -87,7 +87,7 @@ SilverStripe\Forager\Service\IndexConfiguration:
                 type: binary
 ```
 
-Where `getBase64String` is a method in our `FileExtension` - which has already been applied to your `File` class.
+Where `getBase64String` is a method in our `FileExtension` - which is applied to the `File` class by default.
 
 ## Additional documentation
 
