@@ -48,6 +48,7 @@ types of data supported:
 * `date`
 * `number`
 * `geolocation`
+* `binary` (only supported for the `_attachment` field - see below)
 
 You can specify these data types in the `options` node of your fields.
 
@@ -64,6 +65,29 @@ SilverStripe\Forager\Service\IndexConfiguration:
               options:
                 type: text
 ```
+
+### File attachments for content extraction
+
+The Silverstripe Search Service supports content extraction for PDF and Docx files. These can be attached to your
+Document using an `_attachment` field of type `binary`.
+
+This field needs to contain a base 64 encoded string of binary for the file you wish to process.
+
+```yaml
+SilverStripe\Forager\Service\IndexConfiguration:
+  indexes:
+    myindex:
+      includeClasses:
+        SilverStripe\Assets\File:
+          fields:
+            title: true
+            _attachment:
+              property: getBase64String
+              options:
+                type: binary
+```
+
+Where `getBase64String` is a method in our `FileExtension` - which is applied to the `File` class by default.
 
 ## Additional documentation
 

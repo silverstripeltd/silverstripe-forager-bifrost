@@ -51,6 +51,13 @@ class FileExtension extends DataExtension
         return Convert::bytes2memstring((int) $this->getOwner()->ContentSize);
     }
 
+    public function getBase64String(): ?string
+    {
+        $file = $this->getOwner();
+
+        return $file->exists() ? base64_encode($file->getString()) : null;
+    }
+
     public function onBeforeWrite(): void
     {
         $file = $this->getOwner();
