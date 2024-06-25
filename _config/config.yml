@@ -40,7 +40,10 @@ SilverStripe\Core\Injector\Injector:
 SilverStripe\ForagerElasticEnterprise\Service\EnterpriseSearchService:
   # Append to existing valid_field_types definition
   valid_field_types:
-    - 'binary'
+    number: null
+    binary: 'binary'
+    integer: 'integer'
+    float: 'float'
 
 ## customise the dataobject fields for Bifrost compatability
 SilverStripe\Forager\DataObject\DataObjectDocument:
