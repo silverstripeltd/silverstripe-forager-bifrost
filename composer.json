@@ -20,7 +20,7 @@
         "php": "^8.1",
         "silverstripe/framework": "^5",
         "silverstripe/reports": "^5",
-        "silverstripe/silverstripe-forager-elastic-enterprise": "1.x-dev",
+        "silverstripe/silverstripe-forager-elastic-enterprise": "dev-main",
         "guzzlehttp/guzzle": "^7"
     },
     "require-dev": {
