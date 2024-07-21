@@ -18,7 +18,7 @@ class LargeDocumentReportTest extends SapphireTest
         $report = new LargeDocumentReport();
 
         $this->assertEquals(
-            'Documents excluded for content ingestion in search service which exceeds 5 MB',
+            'Documents excluded for content ingestion in Silverstripe Search which exceeds 5 MB',
             $report->description()
         );
     }

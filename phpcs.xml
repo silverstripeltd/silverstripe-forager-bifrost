@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="project-coding-standards">
-    <description>Coding standards for Search Service modules</description>
+    <description>Coding standards for Silverstripe Search modules</description>
 
     <file>src</file>
     <file>tests</file>

@@ -11,10 +11,10 @@ class LargeDocumentReport extends Report
 {
 
     // @phpcs:ignore
-    protected $title = 'Search service large documents report';
+    protected $title = 'Silverstripe Search large documents report';
 
     // @phpcs:ignore
-    protected $description = 'Documents excluded for content ingestion in search service which exceeds %s';
+    protected $description = 'Documents excluded for content ingestion in Silverstripe Search which exceeds %s';
 
     // @phpcs:ignore
     protected $dataClass = File::class;
