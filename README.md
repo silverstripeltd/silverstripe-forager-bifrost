@@ -1,31 +1,16 @@
-# silverstripeltd/search-service-bifrost
+# 🧺 Silverstripe Forager > <img src="https://www.silverstripe.com/favicon.ico" style="height:40px; vertical-align:middle"/> Silverstripe Search Provider
 
-Integrate your Silverstripe CMS with Silverstripe's search service.
+This module provides the ability to index content for a Silverstripe Search engine.
 
-## Other modules
+Silverstripe Search provider for [Silverstripe Forager](https://github.com/silverstripeltd/silverstripe-forager).
 
-* [Add support for querying](https://github.com/silverstripeltd/discoverer-bifrost)
-* [Default theme for search form interfaces](https://github.com/silverstripeltd/discoverer-theme)
+This module **does not** provide any method for performing searches on your engines. See the [Searching](#searching)
+section below for some suggestions.
 
 ## Installation
 
-Add the following to your `composer.json`:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "git@github.com:silverstripeltd/search-service-bifrost.git"
-        }
-    ]
-}
-```
-
-Then run the following:
-
 ```shell
-composer require silverstripeltd/search-service-bifrost
+composer require silverstripe/silverstripe-forager-bifrost
 ```
 
 ## Activating the service
@@ -96,3 +81,10 @@ useful to you are:
 
 * [Configuration](https://github.com/silverstripe/silverstripe-search-service/blob/2/docs/en/configuration.md)
 * [Customisation](https://github.com/silverstripe/silverstripe-search-service/blob/2/docs/en/customising.md)
+
+## Searching
+
+The Silverstripe Search service provides support for searching through its PHP SDK:
+
+* [Discoverer > Bifröst](https://github.com/silverstripeltd/silverstripe-discoverer-bifrost)
+* [Discoverer > Theme](https://github.com/silverstripeltd/silverstripe-discoverer-theme) (optional)
