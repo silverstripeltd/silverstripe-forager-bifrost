@@ -11,17 +11,17 @@ class BifrostService extends EnterpriseSearchService
 
     public function getExternalURL(): ?string
     {
-        return Environment::getEnv('BIFROST_ENDPOINT') ?: null;
+        return null;
     }
 
     public function getExternalURLDescription(): ?string
     {
-        return 'Silverstripe Search Dashboard';
+        return null;
     }
 
     public function getDocumentationURL(): ?string
     {
-        return sprintf('%s/docs', $this->getExternalURL());
+        return sprintf('%s/api/v1/docs', $this->getExternalURL());
     }
 
     /**
