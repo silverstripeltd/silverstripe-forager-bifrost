@@ -7,6 +7,8 @@ use SilverStripe\Assets\Dev\TestAssetStore;
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Image;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Forager\Extensions\SearchServiceExtension;
+use SilverStripe\ForagerBifrost\Extensions\FileExtension;
 use SilverStripe\ForagerBifrost\Extensions\FileFormExtension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
@@ -20,6 +22,16 @@ class FileFormExtensionTest extends SapphireTest
 
     // @phpcs:ignore
     protected $usesDatabase = true;
+
+    /**
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints
+     */
+    protected static $required_extensions = [
+        File::class => [
+            SearchServiceExtension::class,
+            FileExtension::class,
+        ],
+    ];
 
     public function testUpdateForm(): void
     {

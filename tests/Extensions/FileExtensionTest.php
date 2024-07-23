@@ -5,7 +5,9 @@ namespace SilverStripe\ForagerBifrost\Tests\Extensions;
 use SilverStripe\Assets\Dev\TestAssetStore;
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
+use SilverStripe\Core\Environment;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Forager\Extensions\SearchServiceExtension;
 use SilverStripe\ForagerBifrost\Extensions\FileExtension;
 
 class FileExtensionTest extends SapphireTest
@@ -13,6 +15,16 @@ class FileExtensionTest extends SapphireTest
 
     // @phpcs:ignore
     protected $usesDatabase = true;
+
+    /**
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints
+     */
+    protected static $required_extensions = [
+        File::class => [
+            SearchServiceExtension::class,
+            FileExtension::class,
+        ],
+    ];
 
     public function testUpdateSearchAttribute(): void
     {
@@ -90,6 +102,7 @@ class FileExtensionTest extends SapphireTest
         parent::setUp();
 
         TestAssetStore::activate('SearchFileTest');
+        Environment::setEnv('SEARCH_INDEX_FILES', 1);
     }
 
     protected function tearDown(): void
