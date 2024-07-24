@@ -41,6 +41,7 @@ SilverStripe\ForagerElasticEnterprise\Service\EnterpriseSearchService:
   # Append to existing valid_field_types definition
   valid_field_types:
     binary: 'binary'
+  max_document_size: 20971520
 
 ## customise the dataobject fields for Bifrost compatability
 SilverStripe\Forager\DataObject\DataObjectDocument:
