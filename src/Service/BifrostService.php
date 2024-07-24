@@ -2,7 +2,6 @@
 
 namespace SilverStripe\ForagerBifrost\Service;
 
-use SilverStripe\Core\Environment;
 use SilverStripe\Forager\Exception\IndexConfigurationException;
 use SilverStripe\ForagerElasticEnterprise\Service\EnterpriseSearchService;
 
