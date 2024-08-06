@@ -65,7 +65,7 @@ class FileFormExtensionTest extends SapphireTest
         );
         $this->assertNull($fields->fieldByName('Editor.Details.LiteralLargeFileWarning'));
 
-        $file->setFromString(str_repeat('123456', pow(1024, 2)), 'Uploads/testfile.txt');
+        $file->setFromString(str_repeat('012345678901234567890', pow(1024, 2)), 'Uploads/testfile.txt');
         $file->write();
         $context['Record'] = $file;
         $extension->updateForm($form, null, FormFactory::DEFAULT_NAME, $context);
@@ -112,7 +112,7 @@ class FileFormExtensionTest extends SapphireTest
 
         $this->assertInstanceOf(LiteralField::class, $field);
         $this->assertEquals(
-            '<p class="alert alert-info">Document search extraction limit is 5 MB</p>',
+            '<p class="alert alert-info">Document search extraction limit is 20 MB</p>',
             $field->getContent()
         );
     }
@@ -131,13 +131,13 @@ class FileFormExtensionTest extends SapphireTest
         $this->assertNull($field);
 
         $file = File::create();
-        $file->setFromString(str_repeat('123456', pow(1024, 2)), 'Uploads/testfile.txt');
+        $file->setFromString(str_repeat('012345678901234567890', pow(1024, 2)), 'Uploads/testfile.txt');
         $file->write();
         $field = $reflection->invoke($extension, $file);
 
         $this->assertInstanceOf(LiteralField::class, $field);
         $this->assertEquals(
-            '<p class="alert alert-warning">File size is 6 MB which exceeds the search extraction limit of 5 MB</p>',
+            '<p class="alert alert-warning">File size is 21 MB which exceeds the search extraction limit of 20 MB</p>',
             $field->getContent()
         );
     }
