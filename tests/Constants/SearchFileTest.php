@@ -15,7 +15,7 @@ class SearchFileTest extends SapphireTest
 
     public function testSizeLimit(): void
     {
-        $this->assertEquals('5 MB', SearchFile::sizeLimit());
+        $this->assertEquals('20 MB', SearchFile::sizeLimit());
     }
 
     public function testExceedsContentLimit(): void
@@ -28,11 +28,11 @@ class SearchFileTest extends SapphireTest
         $this->assertEquals('5 MB', $file->getSize());
         $this->assertFalse(SearchFile::exceedsContentLimit($file));
 
-        // Creates a 6 MB file
-        $file->setFromString(str_repeat('123456', pow(1024, 2)), 'Uploads/testfile.txt');
+        // Creates a 21 MB file
+        $file->setFromString(str_repeat('012345678901234567890', pow(1024, 2)), 'Uploads/testfile.txt');
         $file->write();
 
-        $this->assertEquals('6 MB', $file->getSize());
+        $this->assertEquals('21 MB', $file->getSize());
         $this->assertTrue(SearchFile::exceedsContentLimit($file));
     }
 

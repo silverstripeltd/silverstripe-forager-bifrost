@@ -50,8 +50,8 @@ class FileExtensionTest extends SapphireTest
             $attributes
         );
 
-        // Creates a 6MB file which exceeds limit of 5MB
-        $file->setFromString(str_repeat('123456', pow(1024, 2)), 'Uploads/testfile.txt');
+        // Creates a 21MB file which exceeds limit of 20MB
+        $file->setFromString(str_repeat('012345678901234567890', pow(1024, 2)), 'Uploads/testfile.txt');
         $file->write();
         $extension->updateSearchAttributes($attributes);
 
