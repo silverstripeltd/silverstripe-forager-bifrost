@@ -11,7 +11,7 @@ class GetEngines extends AppSearchListEngines
     {
         parent::__construct();
 
-        $this->path = '/api/v1/engines/';
+        $this->path = '/api/v1/engines';
     }
 
 }

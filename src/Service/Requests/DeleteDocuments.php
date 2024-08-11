@@ -11,7 +11,7 @@ class DeleteDocuments extends AppSearchDeleteDocuments
     {
         parent::__construct($engineName, $documentIds);
 
-        $this->path = sprintf('/api/v1/%s/documents/', $engineName);
+        $this->path = sprintf('/api/v1/%s/documents', $engineName);
     }
 
 }

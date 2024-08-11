@@ -11,7 +11,7 @@ class PostDocuments extends AppSearchIndexDocuments
     {
         parent::__construct($engineName, $documents);
 
-        $this->path = sprintf('/api/v1/%s/documents/', $engineName);
+        $this->path = sprintf('/api/v1/%s/documents', $engineName);
     }
 
 }
