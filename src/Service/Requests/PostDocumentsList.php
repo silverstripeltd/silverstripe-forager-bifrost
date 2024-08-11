@@ -12,7 +12,7 @@ class PostDocumentsList extends AppSearchListDocuments
         parent::__construct($engineName);
 
         $this->method = 'POST';
-        $this->path = sprintf('/api/v1/%s/documents/list/', $engineName);
+        $this->path = sprintf('/api/v1/%s/documents/list', $engineName);
     }
 
 }

@@ -15,7 +15,7 @@ class PostSchema extends AppSearchPutSchema
     {
         parent::__construct($engineName, $schema);
 
-        $this->path = sprintf('/api/v1/%s/schema/', $engineName);
+        $this->path = sprintf('/api/v1/%s/schema', $engineName);
     }
 
 }

@@ -12,7 +12,7 @@ class PostEngine extends AppSearchCreateEngine
     {
         parent::__construct($engine);
 
-        $this->path = '/api/v1/engines/';
+        $this->path = '/api/v1/engines';
     }
 
 }
