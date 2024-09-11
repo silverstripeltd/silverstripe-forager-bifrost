@@ -33,7 +33,7 @@ SilverStripe\Core\Injector\Injector:
   Elastic\EnterpriseSearch\AppSearch\Request\ListDocuments:
     class: SilverStripe\ForagerBifrost\Service\Requests\PostDocumentsList
   Elastic\EnterpriseSearch\AppSearch\Request\ListEngines:
-    class: SilverStripe\ForagerBifrost\Service\Requests\GetEngines
+    class: SilverStripe\ForagerBifrost\Service\Requests\PostEngines
   Elastic\EnterpriseSearch\AppSearch\Request\PutSchema:
     class: SilverStripe\ForagerBifrost\Service\Requests\PostSchema
 
