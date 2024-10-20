@@ -16,7 +16,7 @@ final class SearchFile
     /**
      * File size limit in bytes
      */
-    public const SIZE_LIMIT = 20 * 1024 * 1024;
+    public const SIZE_LIMIT = 15 * 1024 * 1024;
 
     public static function sizeLimit(): string
     {
