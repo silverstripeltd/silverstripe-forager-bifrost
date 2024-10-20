@@ -31,7 +31,7 @@ class LargeDocumentReportTest extends SapphireTest
         $report = new LargeDocumentReport();
 
         $this->assertEquals(
-            'Documents excluded for content ingestion in Silverstripe Search which exceeds 20 MB',
+            'Documents excluded for content ingestion in Silverstripe Search which exceeds 15 MB',
             $report->description()
         );
     }
@@ -61,7 +61,8 @@ class LargeDocumentReportTest extends SapphireTest
         $this->assertCount(0, $report->sourceRecords());
 
         $file21Mb = File::create();
-        $file21Mb->setFromString(str_repeat('012345678901234567890', pow(1024, 2)), 'Uploads/testfile6.txt');
+        // Creates a 16 MB file which exceeds limit of 15 MB
+        $file21Mb->setFromString(str_repeat('0123456789012345', pow(1024, 2)), 'Uploads/testfile6.txt');
         $file21MbId = $file21Mb->write();
         $files = $report->sourceRecords();
 
