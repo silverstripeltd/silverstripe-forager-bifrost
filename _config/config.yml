@@ -13,10 +13,10 @@ SilverStripe\Core\Injector\Injector:
   SilverStripe\Forager\Interfaces\IndexingInterface:
     class: SilverStripe\ForagerBifrost\Service\BifrostService
     constructor:
-      client: '%$Elastic\EnterpriseSearch\Client'
+      client: '%$Elastic\EnterpriseSearch\Client.managementClient'
       configuration: '%$SilverStripe\Forager\Service\IndexConfiguration'
       builder: '%$SilverStripe\Forager\Service\DocumentBuilder'
-  Elastic\EnterpriseSearch\Client:
+  Elastic\EnterpriseSearch\Client.managementClient:
     factory: SilverStripe\ForagerBifrost\Service\ClientFactory
     constructor:
       host: '`BIFROST_ENDPOINT`'
