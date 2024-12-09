@@ -52,6 +52,13 @@ SilverStripe\Forager\Service\IndexConfiguration:
 
 ### File attachments for content extraction
 
+Firstly, you will need to set this environment variable. This will apply an extension to the `File` class, and allow
+you to use the `_attachment` field (detailed below).
+
+```yaml
+SEARCH_INDEX_FILES=1
+```
+
 Silverstripe Search supports content extraction for many different file types. These can be attached to your Documents
 using an `_attachment` field of type `binary`.
 
