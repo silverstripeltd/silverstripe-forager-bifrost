@@ -1,0 +1,6 @@
+---
+Name: forager-bifrost-batch-cooldown
+---
+SilverStripe\Forager\Jobs\BatchJob:
+  # Default cooldown set to 1 second
+  batch_cooldown_ms: 1000
