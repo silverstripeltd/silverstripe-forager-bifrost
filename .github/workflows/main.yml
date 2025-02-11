@@ -7,11 +7,7 @@ on:
 
 jobs:
   ci:
-    uses: ./.github/workflows/ci-private.yml
-    # when making public move back to
-    # uses: silverstripe/gha-ci/.github/workflows/ci.yml@v1
+    uses: silverstripe/gha-ci/.github/workflows/ci.yml@v1
     with:
       # disable auto detection of JS tests (remove if any JS tests are added)
       js: false
-    secrets:
-      COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
