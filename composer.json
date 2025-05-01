@@ -20,8 +20,8 @@
         "php": "^8.1",
         "silverstripe/framework": "^5",
         "silverstripe/reports": "^5",
-        "silverstripe/silverstripe-forager-elastic-enterprise": "^1",
-        "silverstripe/silverstripe-forager": "^1.1.0",
+        "silverstripe/silverstripe-forager-elastic-enterprise": "dev-feature/synonym-management as 1.0.1",
+        "silverstripe/silverstripe-forager": "dev-feature/synonym-management as 1.1.1",
         "guzzlehttp/guzzle": "^7"
     },
     "require-dev": {
