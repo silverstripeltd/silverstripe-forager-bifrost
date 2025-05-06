@@ -6,6 +6,18 @@ Silverstripe's Search service.
 This module **does not** provide any method for performing searches on your engines. See the [Searching](#searching)
 section below for some suggestions.
 
+<!-- TOC -->
+* [🧺 Silverstripe Forager > <img src="https://www.silverstripe.com/favicon.ico" style="height:40px; vertical-align:middle"/> Silverstripe Search](#-silverstripe-forager--img-srchttpswwwsilverstripecomfaviconico-styleheight40px-vertical-alignmiddle-silverstripe-search)
+  * [Installation](#installation)
+  * [Engine vs Index](#engine-vs-index)
+  * [Specify environment variables](#specify-environment-variables)
+    * [Understanding your engine prefix and suffix:](#understanding-your-engine-prefix-and-suffix)
+  * [Configuration](#configuration)
+    * [File attachments for content extraction](#file-attachments-for-content-extraction)
+  * [Additional documentation](#additional-documentation)
+  * [Searching](#searching)
+<!-- TOC -->
+
 ## Installation
 
 ```shell
