@@ -40,8 +40,8 @@ BIFROST_MANAGEMENT_API_KEY="abc.123.xyz"
 ### Understanding your engine prefix and suffix:
 
 > [!IMPORTANT]
-> **TL;DR:**\
-> - All Silverstripe Search engine names follow a 4 slug format like this: `search-<subscription>-<environment>-<suffix>`\
+> **TL;DR:**
+> - All Silverstripe Search engine names follow a 4 slug format like this: `search-<subscription>-<environment>-<suffix>`
 > - Your `<engine-prefix>` is everything except `-<suffix>`; so, it's just `search-<subscription>-<environment>`
 
 For example:
