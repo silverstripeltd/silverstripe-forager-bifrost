@@ -12,18 +12,62 @@ section below for some suggestions.
 composer require silverstripe/silverstripe-forager-bifrost
 ```
 
-## Activating the service
+## Engine vs Index
+
+> [!IMPORTANT]
+> **TL;DR:**\
+> For all intents and purposes, "engine" and "index" are synonomous. If we refer to something as "engine", but the Discoverer module is asking for an "index", then you simply need to give it the data you have for your engine.
+
+The Discoverer module is built to be service agnostic; meaning, you can use it with any search provider, as long as
+there is an adaptor (like this module) for that service.
+
+When Discoverer refers to an "index", it is talking about the data store used for housing your content. These data
+stores are known by different names across different search providers. Algolia and Elasticsearch call them "indexes",
+Typesense calls them "collections", App Search calls them "engines". Discoverer had to call them **something** in its
+code, and it chose to call then "indexes"; Silverstripe Search, however, calls them "engines".
+
+## Specify environment variables
 
 To integrate with Silverstripe Search, define environment variables containing your endpoint, engine prefix, and
 management API key.
 
 ```
 BIFROST_ENDPOINT="https://abc.provided.domain"
-BIFROST_ENGINE_PREFIX="engine-name-excluding-variant"
+BIFROST_ENGINE_PREFIX="<engine-prefix>" # See "Understanding your engine prefix and suffix" below
 BIFROST_MANAGEMENT_API_KEY="abc.123.xyz"
 ```
 
+### Understanding your engine prefix and suffix:
+
+> [!IMPORTANT]
+> **TL;DR:**\
+> - All Silverstripe Search engine names follow a 4 slug format like this: `search-<subscription>-<environment>-<suffix>`\
+> - Your `<engine-prefix>` is everything except `-<suffix>`; so, it's just `search-<subscription>-<environment>`
+
+For example:
+
+| Engine                    | Engine prefix        | Engine suffix |
+|---------------------------|----------------------|---------------|
+| search-acmecorp-prod-main | search-acmecorp-prod | main          |
+| search-acmecorp-prod-inc  | search-acmecorp-prod | inc           |
+| search-acmecorp-uat-main  | search-acmecorp-uat  | main          |
+| search-acmecorp-uat-inc   | search-acmecorp-uat  | inc           |
+
+**Why?**
+
+Because you probably have more than one environment type that you're running search on (e.g. Production and UAT), and
+(generally speaking) you should have different engines for each of those environments. So, you can't just hardcode
+the entire engine name into your project, because that code doesn't change between environments.
+
+Whenever you make a query, Forager will ask you for the "index" name; you will actually want to provide only the
+`<suffix>`. We will then take `BIFROST_ENGINE_PREFIX` and your `<suffix>`, put them together, and that's what will be
+queried. This allows you to set `BIFROST_ENGINE_PREFIX` differently for each environment, while having your `<suffix>`
+hardcoded in your project.
+
 ## Configuration
+
+> [!WARNING]
+> Once you add a field to an index you cannot change its name or type without deleting the engine so choose field names and set their types carefully
 
 The most notable configuration surface is the schema, which determines how data is stored in your index. There are five
 types of data supported:
@@ -39,7 +83,7 @@ You can specify these data types in the `options` node of your fields.
 ```yaml
 SilverStripe\Forager\Service\IndexConfiguration:
   indexes:
-    myindex:
+    <suffix>:
       includeClasses:
         SilverStripe\CMS\Model\SiteTree:
           fields:
@@ -48,6 +92,20 @@ SilverStripe\Forager\Service\IndexConfiguration:
               property: SummaryField
               options:
                 type: text
+```
+
+Continuing with the `acmecorp` engine examples; they have 2 engines per environment, so it would look something like
+this:
+
+```yaml
+SilverStripe\Forager\Service\IndexConfiguration:
+  indexes:
+    main:
+      includeClasses:
+        ...
+    inc:
+      includeClasses:
+        ...
 ```
 
 ### File attachments for content extraction
@@ -67,7 +125,7 @@ This field needs to contain a base 64 encoded string of binary for the file you 
 ```yaml
 SilverStripe\Forager\Service\IndexConfiguration:
   indexes:
-    myindex:
+    <suffix>:
       includeClasses:
         SilverStripe\Assets\File:
           fields:
