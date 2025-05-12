@@ -4,7 +4,7 @@ namespace SilverStripe\ForagerBifrost\Reports;
 
 use SilverStripe\Assets\File;
 use SilverStripe\ForagerBifrost\Constants\SearchFile;
-use SilverStripe\ORM\SS_List;
+use SilverStripe\Model\List\SS_List;
 use SilverStripe\Reports\Report;
 
 class LargeDocumentReport extends Report

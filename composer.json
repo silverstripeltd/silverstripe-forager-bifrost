@@ -17,27 +17,24 @@
         "Bifröst"
     ],
     "require": {
-        "php": "^8.1",
-        "silverstripe/framework": "^5",
-        "silverstripe/reports": "^5",
-        "silverstripe/silverstripe-forager-elastic-enterprise": "^1.1",
-        "guzzlehttp/guzzle": "^7"
+        "php": "^8.3",
+        "silverstripe/framework": "^6",
+        "silverstripe/reports": "^6",
+        "silverstripe/silverstripe-forager": "dev-feature/v2-silverstripe-6",
+        "silverstripe/silverstripe-search-client-php": "dev-main",
+        "guzzlehttp/guzzle": "^7.9"
     },
     "require-dev": {
-        "silverstripe/recipe-cms": "^5",
-        "phpunit/phpunit": "^9.6.19",
-        "slevomat/coding-standard": "^8.8"
+        "silverstripe/recipe-cms": "^6",
+        "phpunit/phpunit": "^11.3",
+        "slevomat/coding-standard": "~8.18.0"
     },
-    "repositories": {
-        "silverstripe/silverstripe-forager": {
-            "type": "git",
-            "url": "https://github.com/silverstripeltd/silverstripe-forager.git"
-        },
-        "silverstripe/silverstripe-forager-elastic-enterprise": {
-            "type": "git",
-            "url": "https://github.com/silverstripeltd/silverstripe-forager-elastic-enterprise.git"
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/silverstripeltd/silverstripe-search-client-php.git"
         }
-    },
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
