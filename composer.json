@@ -20,8 +20,9 @@
         "php": "^8.1",
         "silverstripe/framework": "^5",
         "silverstripe/reports": "^5",
-        "silverstripe/silverstripe-forager-elastic-enterprise": "^1",
         "silverstripe/silverstripe-forager": "^1.1.0",
+        "silverstripe/silverstripe-search-client": "dev-feature/AOS-209-initial-client as 1.0.0",
+        "elastic/enterprise-search": "^8.6",
         "guzzlehttp/guzzle": "^7"
     },
     "require-dev": {
@@ -29,16 +30,12 @@
         "phpunit/phpunit": "^9.6.19",
         "slevomat/coding-standard": "^8.8"
     },
-    "repositories": {
-        "silverstripe/silverstripe-forager": {
+    "repositories": [
+        {
             "type": "git",
-            "url": "https://github.com/silverstripeltd/silverstripe-forager.git"
-        },
-        "silverstripe/silverstripe-forager-elastic-enterprise": {
-            "type": "git",
-            "url": "https://github.com/silverstripeltd/silverstripe-forager-elastic-enterprise.git"
+            "url": "git@github.com:silverstripeltd/silverstripe-search-client.git"
         }
-    },
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {

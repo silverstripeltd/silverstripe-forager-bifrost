@@ -13,4 +13,10 @@
             </exclude>
         </whitelist>
     </filter>
+    <php>
+        <env name="BIFROST_ENDPOINT" value="https://fakeplace.com" force="true" />
+    </php>
+    <php>
+        <env name="BIFROST_MANAGEMENT_API_KEY" value="fakeApiKey" force="true" />
+    </php>
 </phpunit>
