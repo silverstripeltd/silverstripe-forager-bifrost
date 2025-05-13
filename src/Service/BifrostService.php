@@ -2,10 +2,8 @@
 
 namespace SilverStripe\ForagerBifrost\Service;
 
-use Elastic\EnterpriseSearch\AppSearch\Request\GetDocuments;
-use Elastic\EnterpriseSearch\AppSearch\Schema\Engine;
-use Elastic\EnterpriseSearch\AppSearch\Schema\SchemaUpdateRequest;
-use Elastic\EnterpriseSearch\Client;
+use Exception;
+use InvalidArgumentException;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Core\Config\Configurable;
@@ -20,12 +18,10 @@ use SilverStripe\Forager\Schema\Field;
 use SilverStripe\Forager\Service\DocumentBuilder;
 use SilverStripe\Forager\Service\IndexConfiguration;
 use SilverStripe\Forager\Service\Traits\ConfigurationAware;
-use SilverStripe\ForagerBifrost\Service\Requests\DeleteDocuments;
-use SilverStripe\ForagerBifrost\Service\Requests\PostDocuments;
-use SilverStripe\ForagerBifrost\Service\Requests\PostDocumentsList;
-use SilverStripe\ForagerBifrost\Service\Requests\PostEngine;
-use SilverStripe\ForagerBifrost\Service\Requests\PostEngines;
-use SilverStripe\ForagerBifrost\Service\Requests\PostSchema;
+use Silverstripe\Search\Client\Client;
+use Silverstripe\Search\Client\Model\DocumentListRequest;
+use Silverstripe\Search\Client\Model\PaginationNoTotals;
+use stdClass;
 
 class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
 {
@@ -107,25 +103,21 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
         $processedIds = [];
 
         foreach ($documentMap as $indexName => $docsToAdd) {
-            $request = new PostDocuments($this->environmentizeIndex($indexName), $docsToAdd);
-            $response = $this->getClient()->appSearch()
-                ->indexDocuments($request)
-                ->asArray();
+            $response = $this->getClient()->documentsPost($this->environmentizeIndex($indexName), $docsToAdd);
 
-            $this->handleError($response);
+            if (!$response) {
+                continue;
+            }
 
-            // Grab all the ID values, and also cast them to string
-            $processedIds += array_map('strval', array_column($response, 'id'));
+            foreach ($response as $documentResponse) {
+                $processedIds[] = $documentResponse->getId();
+            }
         }
 
         // One document could have existed in multiple indexes, we only care to track it once
         return array_unique($processedIds);
     }
 
-    /**
-     * @param DocumentInterface $document
-     * @throws Exception
-     */
     public function removeDocument(DocumentInterface $document): ?string
     {
         $processedIds = $this->removeDocuments([$document]);
@@ -135,7 +127,6 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
 
     /**
      * @param DocumentInterface[] $documents
-     * @throws Exception
      */
     public function removeDocuments(array $documents): array
     {
@@ -163,17 +154,15 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
         }
 
         foreach ($documentMap as $indexName => $idsToRemove) {
-            $request = new DeleteDocuments($this->environmentizeIndex($indexName), $idsToRemove);
-            $response = $this->getClient()->appSearch()
-                ->deleteDocuments($request)
-                ->asArray();
+            $response = $this->getClient()->documentsDelete($this->environmentizeIndex($indexName), $idsToRemove);
 
-            $this->handleError($response);
+            if (!$response) {
+                continue;
+            }
 
-            // Results here can be marked as deleted true or false. false would indicate that no document with that ID
-            // exists in the Bifröst - which, is the same result, really
-            // Grab all the ID values, and also cast them to string
-            $processedIds += array_map('strval', array_column($response, 'id'));
+            foreach ($response as $documentResponse) {
+                $processedIds[] = $documentResponse->getId();
+            }
         }
 
         // One document could have existed in multiple indexes, we only care to track it once
@@ -194,32 +183,28 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
         $client = $this->getClient();
         $numDeleted = 0;
 
-        $request = new PostDocumentsList($this->environmentizeIndex($indexName));
-        $request->setPageSize($cfg->getBatchSize());
-        $request->setCurrentPage(1);
+        $pagination = new PaginationNoTotals();
+        $pagination->setSize($cfg->getBatchSize());
+        $pagination->setCurrent(1);
 
-        $response = $client->appSearch()
-            ->listDocuments($request)
-            ->asArray();
+        $request = new DocumentListRequest();
+        $request->setPage($pagination);
 
-        $this->handleError($response);
+        $response = $client->documentsListPost($indexName, $request);
 
-        $results = $response['results'] ?? [];
+        $results = $response->getResults() ?? [];
 
         // Loop forever until we no longer get any results
         while (count($results) > 0) {
             $idsToRemove = [];
 
             // Create the list of indexed documents to remove
-            foreach ($response['results'] as $doc) {
+            foreach ($response->getResults() as $doc) {
                 $idsToRemove[] = $doc['id'];
             }
 
-            $deleteDocsRequest = new DeleteDocuments($indexName, $idsToRemove);
             // Actually delete the documents
-            $deletedDocs = $client->appSearch()
-                ->deleteDocuments($deleteDocsRequest)
-                ->asArray();
+            $deletedDocs = $client->documentsDelete($indexName, $idsToRemove);
 
             // Keep an accurate running count of the number of documents deleted.
             foreach ($deletedDocs as $doc) {
@@ -232,13 +217,9 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
             }
 
             // Re-fetch $documents now that we've deleted this batch
-            $response = $client->appSearch()
-                ->listDocuments($request)
-                ->asArray();
+            $response = $client->documentsListPost($indexName, $request);
 
-            $this->handleError($response);
-
-            $results = $response['results'] ?? [];
+            $results = $response->getResults() ?? [];
         }
 
         return $numDeleted;
@@ -261,23 +242,16 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
 
     /**
      * @return DocumentInterface[]
-     * @throws IndexingServiceException
      */
     public function getDocuments(array $ids): array
     {
         $docs = [];
 
         foreach (array_keys($this->getConfiguration()->getIndexes()) as $indexName) {
-            $request = Injector::inst()->create(
-                GetDocuments::class,
-                $this->environmentizeIndex($indexName),
-                $ids
-            );
-            $response = $this->getClient()->appSearch()
-                ->getDocuments($request)
-                ->asArray();
-
-            $this->handleError($response);
+            // This is going to return results as a stdClass
+            $response = $this->getClient()->documentsGet($this->environmentizeIndex($indexName), $ids);
+            // Convert to associative, because this is what the builder requires
+            $response = json_decode(json_encode($response), true);
 
             $results = $response['results'] ?? null;
 
@@ -304,20 +278,22 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
      * @return DocumentInterface[]
      * @throws Exception
      */
-    public function listDocuments(string $indexName, ?int $pageSize = null, int $currentPage = 0): array
+    public function listDocuments(string $indexName, ?int $pageSize = null, int $currentPage = 1): array
     {
-        $request = new PostDocumentsList($this->environmentizeIndex($indexName));
-        $request->setCurrentPage($currentPage);
+        $pagination = new PaginationNoTotals();
+        $pagination->setCurrent($currentPage);
 
         if ($pageSize) {
-            $request->setPageSize($pageSize);
+            $pagination->setSize($pageSize);
         }
 
-        $response = $this->getClient()->appSearch()
-            ->listDocuments($request)
-            ->asArray();
+        $request = new DocumentListRequest();
+        $request->setPage($pagination);
 
-        $this->handleError($response);
+        // This is going to return results as a stdClass
+        $response = $this->getClient()->documentsListPost($indexName, $request);
+        // Convert to associative, because this is what the builder requires
+        $response = json_decode(json_encode($response), true);
 
         $results = $response['results'] ?? null;
 
@@ -345,14 +321,17 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
      */
     public function getDocumentTotal(string $indexName): int
     {
-        $request = new PostDocumentsList($this->environmentizeIndex($indexName));
-        $response = $this->getClient()->appSearch()
-            ->listDocuments($request)
-            ->asArray();
+        $pagination = new PaginationNoTotals();
+        // We're only interested in the metadata, so the number of docs we request is actually not important
+        $pagination->setSize(1);
+        $pagination->setCurrent(1);
 
-        $this->handleError($response);
+        $request = new DocumentListRequest();
+        $request->setPage($pagination);
 
-        $total = $response['meta']['page']['total_results'] ?? null;
+        $response = $this->getClient()->documentsListPost($indexName, $request);
+
+        $total = $response->getMeta()->getPage()->getTotalResults() ?? null;
 
         if ($total === null) {
             throw new IndexingServiceException('Total results not provided in meta content');
@@ -364,7 +343,6 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
     /**
      * Ensure all the engines exist
      *
-     * @throws IndexingServiceException
      * @throws IndexConfigurationException
      */
     public function configure(): array
@@ -375,21 +353,13 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
             $this->validateIndex($indexName);
 
             $envIndex = $this->environmentizeIndex($indexName);
-            $this->findOrMakeIndex($envIndex);
 
             // Fetch the Schema, as it is currently configured in our application
             $definedSchema = $this->getSchemaForFields($this->getConfiguration()->getFieldsForIndex($indexName));
-
-            $request = new PostSchema($envIndex, $definedSchema);
             // Trigger an update to Bifröst with our current configured Schema
-            $newBifrostSchema = $this->getClient()->appSearch()
-                ->putSchema($request)
-                ->asArray();
+            $newBifrostSchema = $this->getClient()->schemaPost($envIndex, $definedSchema);
 
-            $this->handleError($newBifrostSchema);
-
-            // Add this updated Schema to our tracked Schemas
-            $schemas[$indexName] = $newBifrostSchema;
+            $schemas[$indexName] = $newBifrostSchema->getAcknowledged();
         }
 
         return $schemas;
@@ -442,66 +412,6 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
     /**
      * @throws IndexingServiceException
      */
-    private function findOrMakeIndex(string $index): void
-    {
-        $allEngines = $this->fetchEngines();
-
-        if (in_array($index, $allEngines, true)) {
-            return;
-        }
-
-        $engine = Injector::inst()->create(Engine::class, $index);
-        $request = new PostEngine($engine);
-        $response = $this->getClient()
-            ->appSearch()
-            ->createEngine($request)
-            ->asArray();
-
-        $this->handleError($response);
-    }
-
-    /**
-     * @throws IndexingServiceException
-     */
-    private function fetchPaginatedEngines(int $page = 1): array
-    {
-        $request = new PostEngines();
-        $request->setCurrentPage($page);
-
-        $response = $this->getClient()
-            ->appSearch()
-            ->listEngines($request)
-            ->asArray();
-
-        $this->handleError($response);
-
-        if (!array_key_exists('results', $response) || !is_array($response['results'])) {
-            throw new IndexingServiceException('Invalid response format for listEngines; missing "results"');
-        }
-
-        return $response;
-    }
-
-    private function fetchEngines(): array
-    {
-        $response = $this->fetchPaginatedEngines(1);
-
-        $results = $response['results'];
-
-        if (isset($response['meta']['page']['total_pages']) && $response['meta']['page']['total_pages'] > 1) {
-            foreach (range(2, $response['meta']['page']['total_pages']) as $page) {
-                $paginatedResponse = $this->fetchPaginatedEngines($page);
-
-                $results = array_merge($results, $paginatedResponse['results']);
-            }
-        }
-
-        return array_column($results, 'name');
-    }
-
-    /**
-     * @throws IndexingServiceException
-     */
     private function handleError(?array $responseBody): void
     {
         if (!is_array($responseBody)) {
@@ -533,9 +443,9 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
     /**
      * @param Field[] $fields
      */
-    private function getSchemaForFields(array $fields): SchemaUpdateRequest
+    private function getSchemaForFields(array $fields): stdClass
     {
-        $request = Injector::inst()->create(SchemaUpdateRequest::class);
+        $request = new stdClass();
 
         foreach ($fields as $field) {
             $explicitFieldType = $field->getOption('type') ?? $this->config()->get('default_field_type');
