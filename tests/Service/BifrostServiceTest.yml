@@ -1,0 +1,60 @@
+SilverStripe\ForagerBifrost\Tests\Fake\TagFake:
+  one:
+    Title: Tag one
+  two:
+    Title: Tag two
+  three:
+    Title: Tag three
+
+SilverStripe\ForagerBifrost\Tests\Fake\ImageFake:
+  one:
+    URL: '/image-one/'
+    Tags: =>SilverStripe\ForagerBifrost\Tests\Fake\TagFake.two,=>SilverStripe\ForagerBifrost\Tests\Fake\TagFake.three
+  two:
+    URL: '/image-two/'
+    Tags: =>SilverStripe\ForagerBifrost\Tests\Fake\TagFake.one,=>SilverStripe\ForagerBifrost\Tests\Fake\TagFake.two
+
+SilverStripe\Security\Member:
+  one:
+    FirstName: member-one-first
+    Surname: member-one-last
+  two:
+    FirstName: member-two-first
+    Surname: member-two-last
+  three:
+    FirstName: member-three-first
+    Surname: member-three-last
+
+SilverStripe\ForagerBifrost\Tests\Fake\DataObjectFake:
+  one:
+    Title: Dataobject one
+    Tags: =>SilverStripe\ForagerBifrost\Tests\Fake\TagFake.one,=>SilverStripe\ForagerBifrost\Tests\Fake\TagFake.two
+    Member: =>SilverStripe\Security\Member.one
+    Images: =>SilverStripe\ForagerBifrost\Tests\Fake\ImageFake.one
+    Sort: 1
+    ShowInSearch: 1
+  two:
+    Title: Dataobject two
+    Tags: =>SilverStripe\ForagerBifrost\Tests\Fake\TagFake.two,=>SilverStripe\ForagerBifrost\Tests\Fake\TagFake.three
+    Member: =>SilverStripe\Security\Member.two
+    Images: =>SilverStripe\ForagerBifrost\Tests\Fake\ImageFake.two
+    Sort: 2
+    ShowInSearch: 0
+  three:
+    Title: Dataobject three
+    Tags: =>SilverStripe\ForagerBifrost\Tests\Fake\TagFake.one
+    Member: =>SilverStripe\Security\Member.three
+    Sort: 3
+    ShowInSearch: 1
+
+SilverStripe\ForagerBifrost\Tests\Fake\DataObjectFakePrivate:
+  one:
+    Title: Dataobject one
+
+SilverStripe\ForagerBifrost\Tests\Fake\DataObjectFakeVersioned:
+  one:
+    Title: Dataobject one Versioned
+    ShowInSearch: 1
+  two:
+    Title: Dataobject two Versioned
+    ShowInSearch: 0
