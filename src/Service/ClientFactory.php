@@ -14,13 +14,13 @@ use Silverstripe\Search\Client\Client;
 class ClientFactory implements Factory
 {
 
-    private const ENDPOINT = 'BIFROST_ENDPOINT';
-    private const QUERY_API_KEY = 'BIFROST_QUERY_API_KEY';
+    private const string ENDPOINT = 'BIFROST_ENDPOINT';
+    private const string QUERY_API_KEY = 'BIFROST_QUERY_API_KEY';
 
     /**
      * @throws Exception
      */
-    public function create($service, array $params = []) // phpcs:ignore SlevomatCodingStandard.TypeHints
+    public function create(string $service, array $params = []): ?object
     {
         $host = $params['host'] ?? null;
         $token = $params['token'] ?? null;

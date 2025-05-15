@@ -6,14 +6,14 @@ use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
 use SilverStripe\Core\Convert;
+use SilverStripe\Core\Extension;
 use SilverStripe\ForagerBifrost\Constants\SearchFile;
-use SilverStripe\ORM\DataExtension;
 
 /**
  * @property int $ContentSize
  * @method File|$this getOwner()
  */
-class FileExtension extends DataExtension
+class FileExtension extends Extension
 {
 
     /**

@@ -27,7 +27,7 @@
     "require-dev": {
         "silverstripe/recipe-cms": "^6",
         "phpunit/phpunit": "^11.3",
-        "slevomat/coding-standard": "^8.8"
+        "slevomat/coding-standard": "~8.18.0"
     },
     "repositories": [
         {

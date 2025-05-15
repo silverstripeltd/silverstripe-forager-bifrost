@@ -45,7 +45,7 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
         return sprintf('%s/api/v1/docs', $this->getExternalURL());
     }
 
-    private const DEFAULT_FIELD_TYPE = 'text';
+    private const string DEFAULT_FIELD_TYPE = 'text';
 
     private Client $client;
 
