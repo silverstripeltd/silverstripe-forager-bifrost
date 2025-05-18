@@ -7,10 +7,6 @@ use SilverStripe\Forager\Service\Query\SynonymRule as SynonymRuleQuery;
 use SilverStripe\ForagerBifrost\Processors\SynonymRuleProcessor;
 use stdClass;
 
-/**
- * Even though the Elastic Enterprise Search SDK request is called PUT, it's actually a PATCH, as it requires the
- * record to already exist
- */
 class UpdateSynonymRule extends CreateSynonymSet
 {
 
