@@ -6,6 +6,8 @@ use Elastic\EnterpriseSearch\Client;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forager\Interfaces\Requests\UpdateSynonymRuleAdaptor as PatchSynonymRuleAdaptorInterface;
 use SilverStripe\Forager\Service\Query\SynonymRule as SynonymRuleQuery;
+use SilverStripe\Forager\Service\Results\SynonymRule as SynonymRuleResult;
+use SilverStripe\ForagerBifrost\Processors\SynonymRuleProcessor;
 use SilverStripe\ForagerBifrost\Service\Requests\UpdateSynonymRule;
 
 class UpdateSynonymRuleAdaptor implements PatchSynonymRuleAdaptorInterface
@@ -26,7 +28,7 @@ class UpdateSynonymRuleAdaptor implements PatchSynonymRuleAdaptorInterface
         int|string $synonymCollectionId,
         int|string $synonymRuleId,
         SynonymRuleQuery $synonymRule
-    ): string|int {
+    ): SynonymRuleResult {
         $request = Injector::inst()->create(
             UpdateSynonymRule::class,
             $synonymCollectionId,
@@ -38,7 +40,10 @@ class UpdateSynonymRuleAdaptor implements PatchSynonymRuleAdaptorInterface
         $body = $this->client->appSearch()->createSynonymSet($request)->asString();
         $body = json_decode($body, true);
 
-        return $body['id'];
+        $synonymRuleResult = SynonymRuleResult::create($body['id']);
+        SynonymRuleProcessor::applyStringToResult($synonymRuleResult, $body['synonyms']);
+
+        return $synonymRuleResult;
     }
 
 }
