@@ -6,6 +6,8 @@ use Elastic\EnterpriseSearch\Client;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forager\Interfaces\Requests\CreateSynonymRuleAdaptor as PostSynonymRuleAdaptorInterface;
 use SilverStripe\Forager\Service\Query\SynonymRule as SynonymRuleQuery;
+use SilverStripe\Forager\Service\Results\SynonymRule as SynonymRuleResult;
+use SilverStripe\ForagerBifrost\Processors\SynonymRuleProcessor;
 use SilverStripe\ForagerBifrost\Service\Requests\CreateSynonymRule;
 
 class CreateSynonymRuleAdaptor implements PostSynonymRuleAdaptorInterface
@@ -22,7 +24,7 @@ class CreateSynonymRuleAdaptor implements PostSynonymRuleAdaptorInterface
         $this->client = $client;
     }
 
-    public function process(int|string $synonymCollectionId, SynonymRuleQuery $synonymRule): string|int
+    public function process(int|string $synonymCollectionId, SynonymRuleQuery $synonymRule): SynonymRuleResult
     {
         $request = Injector::inst()->create(CreateSynonymRule::class, $synonymCollectionId, $synonymRule);
 
@@ -30,7 +32,10 @@ class CreateSynonymRuleAdaptor implements PostSynonymRuleAdaptorInterface
         $body = $this->client->appSearch()->createSynonymSet($request)->asString();
         $body = json_decode($body, true);
 
-        return $body['id'];
+        $synonymRuleResult = SynonymRuleResult::create($body['id']);
+        SynonymRuleProcessor::applyStringToResult($synonymRuleResult, $body['synonyms']);
+
+        return $synonymRuleResult;
     }
 
 }
