@@ -2,6 +2,8 @@
 
 namespace SilverStripe\ForagerBifrost\Service;
 
+use SilverStripe\Control\Controller;
+use SilverStripe\Core\Environment;
 use SilverStripe\Forager\Exception\IndexConfigurationException;
 use SilverStripe\ForagerElasticEnterprise\Service\EnterpriseSearchService;
 
@@ -20,7 +22,7 @@ class BifrostService extends EnterpriseSearchService
 
     public function getDocumentationURL(): ?string
     {
-        return sprintf('%s/api/v1/docs', $this->getExternalURL());
+        return Controller::join_links(Environment::getEnv('BIFROST_ENDPOINT'), '/resources/guides/index.html');
     }
 
     /**
