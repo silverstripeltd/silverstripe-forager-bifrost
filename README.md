@@ -118,7 +118,7 @@ SEARCH_INDEX_FILES=1
 
 Silverstripe Search supports content extraction for many different file types. These can be attached to your Documents using an `_attachment` field of type `binary`.
 
-This field needs to contain a base 64 encoded string of binary for the file you wish to process.
+This field needs to contain a base 64 encoded string of binary for the file you wish to process. You should also define the special `body` field with type `text` which will automatically be created to store the extracted file content.
 
 ```yaml
 SilverStripe\Forager\Service\IndexConfiguration:
@@ -128,6 +128,7 @@ SilverStripe\Forager\Service\IndexConfiguration:
         SilverStripe\Assets\File:
           fields:
             title: true
+            body: true # this is the field that will contain the extract content
             _attachment:
               property: getBase64String
               options:
