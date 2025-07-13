@@ -13,7 +13,6 @@ use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forager\Exception\IndexConfigurationException;
 use SilverStripe\Forager\Exception\IndexingServiceException;
-use SilverStripe\Forager\Interfaces\BatchDocumentRemovalInterface;
 use SilverStripe\Forager\Interfaces\DocumentInterface;
 use SilverStripe\Forager\Interfaces\IndexingInterface;
 use SilverStripe\Forager\Schema\Field;
@@ -26,7 +25,7 @@ use Silverstripe\Search\Client\Model\PaginationNoTotals;
 use stdClass;
 use Throwable;
 
-class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
+class BifrostService implements IndexingInterface
 {
 
     use Configurable;
@@ -168,21 +167,16 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
     }
 
     /**
-     * Forcefully remove all documents from the provided index name. Batches the requests to Bifröst based upon the
-     * configured batch size, beginning at page 1 and continuing until the index is empty.
-     *
-     * @param string $indexSuffix The index name to remove all documents from
      * @return int The total number of documents removed
      */
-    public function removeAllDocuments(string $indexSuffix): int
+    public function clearIndexDocuments(string $indexSuffix, int $batchSize): int
     {
         $indexName = $this->getConfiguration()->environmentizeIndex($indexSuffix);
-        $cfg = $this->getConfiguration();
         $client = $this->getClient();
         $numDeleted = 0;
 
         $pagination = new PaginationNoTotals();
-        $pagination->setSize($cfg->getBatchSize());
+        $pagination->setSize($batchSize);
         $pagination->setCurrent(1);
 
         $request = new DocumentListRequest();
@@ -190,34 +184,28 @@ class BifrostService implements IndexingInterface, BatchDocumentRemovalInterface
 
         $response = $client->documentsListPost($indexName, $request);
 
-        $results = $response->getResults() ?? [];
+        $idsToRemove = [];
 
-        // Loop forever until we no longer get any results
-        while (count($results) > 0) {
-            $idsToRemove = [];
+        // Create the list of indexed documents to remove
+        foreach ($response->getResults() as $doc) {
+            $idsToRemove[] = $doc['id'];
+        }
 
-            // Create the list of indexed documents to remove
-            foreach ($response->getResults() as $doc) {
-                $idsToRemove[] = $doc['id'];
+        if (!$idsToRemove) {
+            return 0;
+        }
+
+        // Actually delete the documents
+        $deletedDocs = $client->documentsDelete($indexName, $idsToRemove);
+
+        // Keep an accurate running count of the number of documents deleted.
+        foreach ($deletedDocs as $doc) {
+            $deleted = $doc?->getDeleted() ?? false;
+
+            // phpcs:ignore SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed
+            if ($deleted) {
+                $numDeleted += 1;
             }
-
-            // Actually delete the documents
-            $deletedDocs = $client->documentsDelete($indexName, $idsToRemove);
-
-            // Keep an accurate running count of the number of documents deleted.
-            foreach ($deletedDocs as $doc) {
-                $deleted = $doc?->getDeleted() ?? false;
-
-                // phpcs:ignore SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed
-                if ($deleted) {
-                    $numDeleted += 1;
-                }
-            }
-
-            // Re-fetch $documents now that we've deleted this batch
-            $response = $client->documentsListPost($indexName, $request);
-
-            $results = $response->getResults() ?? [];
         }
 
         return $numDeleted;
