@@ -21,7 +21,7 @@
         "silverstripe/framework": "^6",
         "silverstripe/reports": "^6",
         "silverstripe/silverstripe-forager": "dev-feature/v2-silverstripe-6",
-        "silverstripe/silverstripe-search-client-php": "dev-main",
+        "silverstripe/silverstripe-search-client-php": "^0.0.1-alpha",
         "guzzlehttp/guzzle": "^7.9"
     },
     "require-dev": {
@@ -29,12 +29,6 @@
         "phpunit/phpunit": "^11.3",
         "slevomat/coding-standard": "~8.18.0"
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/silverstripeltd/silverstripe-search-client-php.git"
-        }
-    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {

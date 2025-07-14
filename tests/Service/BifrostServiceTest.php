@@ -938,70 +938,15 @@ class BifrostServiceTest extends SapphireTest
                 'deleted' => true,
             ],
         ]);
-        // Third response, listing out the documents that are available after our delete request. We'll return some
-        // more items to be deleted (testing that the loop functions)
-        $bodyThree = json_encode([
-            'meta' => [
-                'page' => [
-                    'current' => 1,
-                    // Two pages of results, 3 here, and then we'll have 2 more later
-                    'total_pages' => 2,
-                    // Total of 4 documents, 3 of which are presented now
-                    'total_results' => 5,
-                    'size' => 3,
-                ],
-            ],
-            'results' => [
-                [
-                    'id' => 'doc1',
-                    'record_id' => '1',
-                ],
-                [
-                    'id' => 'doc2',
-                    'record_id' => '2',
-                ],
-                [
-                    'id' => 'doc3',
-                    'record_id' => '3',
-                ],
-            ],
-        ]);
-        // Fourth response is from the second delete request
-        $bodyFour = json_encode([
-            [
-                'id' => 'doc4',
-                'deleted' => true,
-            ],
-            [
-                'id' => 'doc5',
-                'deleted' => true,
-            ],
-        ]);
-        // Fifth (and final) response is for when we request available documents after our second delete request. We'll
-        // return no results here, indicating that everything has been deleted
-        $bodyFive = json_encode([
-            'meta' => [
-                'page' => [
-                    'current' => 1,
-                    'total_pages' => 1,
-                    'total_results' => 0,
-                    'size' => 100,
-                ],
-            ],
-            'results' => [],
-        ]);
 
         // Append our mocks
         $this->mock->append(new Response(200, $headers, $bodyOne));
         $this->mock->append(new Response(200, $headers, $bodyTwo));
-        $this->mock->append(new Response(200, $headers, $bodyThree));
-        $this->mock->append(new Response(200, $headers, $bodyFour));
-        $this->mock->append(new Response(200, $headers, $bodyFive));
 
-        $numRemoved = $this->searchService->removeAllDocuments('content');
+        $numRemoved = $this->searchService->clearIndexDocuments('content', 5);
 
-        // A total of 5 documents were requested to be removed, but only 4 returned deleted = true
-        $this->assertEqualsCanonicalizing(4, $numRemoved);
+        // A total of 3 documents were requested to be removed, but only 2 returned deleted = true
+        $this->assertEqualsCanonicalizing(2, $numRemoved);
         // And make sure nothing is left in our Response Stack. This would indicate that every Request we expect to make
         // has been made
         $this->assertEquals(0, $this->mock->count());
