@@ -2,13 +2,14 @@
 
 namespace SilverStripe\ForagerBifrost\Adaptors\Requests;
 
-use Elastic\EnterpriseSearch\AppSearch\Request\ListSynonymSets;
-use Elastic\EnterpriseSearch\Client;
-use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forager\Interfaces\Requests\GetSynonymRulesAdaptor as GetSynonymRulesAdaptorInterface;
+use SilverStripe\Forager\Service\IndexConfiguration;
 use SilverStripe\Forager\Service\Results\SynonymRule;
 use SilverStripe\Forager\Service\Results\SynonymRules;
 use SilverStripe\ForagerBifrost\Processors\SynonymRuleProcessor;
+use Silverstripe\Search\Client\Client;
+use Silverstripe\Search\Client\Exception\SynonymRulesGetNotFoundException;
+use Silverstripe\Search\Client\Exception\SynonymRulesGetUnprocessableEntityException;
 
 class GetSynonymRulesAdaptor implements GetSynonymRulesAdaptorInterface
 {
@@ -24,19 +25,27 @@ class GetSynonymRulesAdaptor implements GetSynonymRulesAdaptorInterface
         $this->client = $client;
     }
 
+    /**
+     * @throws SynonymRulesGetNotFoundException
+     * @throws SynonymRulesGetUnprocessableEntityException
+     */
     public function process(int|string $synonymCollectionId): SynonymRules
     {
-        $request = Injector::inst()->create(ListSynonymSets::class, $synonymCollectionId);
+        // Silverstripe Search simply uses the engine name as the Synonym Collection ID
+        $engineName = IndexConfiguration::singleton()->environmentizeIndex($synonymCollectionId);
 
         // Should either be successful or throw an exception, which we'll let fly
-        $body = $this->client->appSearch()->listSynonymSets($request)->asString();
-        $body = json_decode($body, true);
-
+        $response = $this->client->synonymRulesGet($engineName);
         $synonymRules = SynonymRules::create();
 
-        foreach ($body as $result) {
-            $synonymRule = SynonymRule::create($result['id']);
-            SynonymRuleProcessor::applyStringToResult($synonymRule, $result['synonyms']);
+        // Covers for either null being returned or an empty array
+        if (!$response) {
+            return $synonymRules;
+        }
+
+        foreach ($response as $result) {
+            $synonymRule = SynonymRule::create($result->getId());
+            SynonymRuleProcessor::applyStringToResult($synonymRule, $result->getSynonyms());
 
             $synonymRules->add($synonymRule);
         }

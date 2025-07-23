@@ -2,13 +2,15 @@
 
 namespace SilverStripe\ForagerBifrost\Adaptors\Requests;
 
-use Elastic\EnterpriseSearch\Client;
-use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forager\Interfaces\Requests\UpdateSynonymRuleAdaptor as PatchSynonymRuleAdaptorInterface;
+use SilverStripe\Forager\Service\IndexConfiguration;
 use SilverStripe\Forager\Service\Query\SynonymRule as SynonymRuleQuery;
 use SilverStripe\Forager\Service\Results\SynonymRule as SynonymRuleResult;
 use SilverStripe\ForagerBifrost\Processors\SynonymRuleProcessor;
-use SilverStripe\ForagerBifrost\Service\Requests\UpdateSynonymRule;
+use Silverstripe\Search\Client\Client;
+use Silverstripe\Search\Client\Exception\SynonymRulePutNotFoundException;
+use Silverstripe\Search\Client\Exception\SynonymRulePutUnprocessableEntityException;
+use Silverstripe\Search\Client\Model\SynonymRuleRequest;
 
 class UpdateSynonymRuleAdaptor implements PatchSynonymRuleAdaptorInterface
 {
@@ -24,24 +26,27 @@ class UpdateSynonymRuleAdaptor implements PatchSynonymRuleAdaptorInterface
         $this->client = $client;
     }
 
+    /**
+     * @throws SynonymRulePutNotFoundException
+     * @throws SynonymRulePutUnprocessableEntityException
+     */
     public function process(
         int|string $synonymCollectionId,
         int|string $synonymRuleId,
         SynonymRuleQuery $synonymRule
     ): SynonymRuleResult {
-        $request = Injector::inst()->create(
-            UpdateSynonymRule::class,
-            $synonymCollectionId,
-            $synonymRuleId,
-            $synonymRule
-        );
+        // Silverstripe Search simply uses the engine name as the Synonym Collection ID
+        $engineName = IndexConfiguration::singleton()->environmentizeIndex($synonymCollectionId);
+        // Convert the query into a Silverstripe Search synonym rule string
+        $synonyms = SynonymRuleProcessor::getStringFromQuery($synonymRule);
+        $request = new SynonymRuleRequest();
+        $request->setSynonyms($synonyms);
 
         // Should either be successful or throw an exception, which we'll let fly
-        $body = $this->client->appSearch()->createSynonymSet($request)->asString();
-        $body = json_decode($body, true);
+        $response = $this->client->synonymRulePut($synonymRuleId, $engineName, $request);
 
-        $synonymRuleResult = SynonymRuleResult::create($body['id']);
-        SynonymRuleProcessor::applyStringToResult($synonymRuleResult, $body['synonyms']);
+        $synonymRuleResult = SynonymRuleResult::create($response->getId());
+        SynonymRuleProcessor::applyStringToResult($synonymRuleResult, $response->getSynonyms());
 
         return $synonymRuleResult;
     }
