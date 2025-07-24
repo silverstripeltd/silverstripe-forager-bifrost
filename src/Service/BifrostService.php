@@ -22,6 +22,7 @@ use SilverStripe\Forager\Service\Traits\ConfigurationAware;
 use Silverstripe\Search\Client\Client;
 use Silverstripe\Search\Client\Model\DocumentListRequest;
 use Silverstripe\Search\Client\Model\PaginationNoTotals;
+use Silverstripe\Search\Client\Model\Schema;
 use stdClass;
 use Throwable;
 
@@ -433,13 +434,13 @@ class BifrostService implements IndexingInterface
     /**
      * @param Field[] $fields
      */
-    private function getSchemaForFields(array $fields): stdClass
+    private function getSchemaForFields(array $fields): Schema
     {
-        $request = new stdClass();
+        $request = new Schema();
 
         foreach ($fields as $field) {
             $explicitFieldType = $field->getOption('type') ?? $this->config()->get('default_field_type');
-            $request->{$field->getSearchFieldName()} = $explicitFieldType;
+            $request[$field->getSearchFieldName()] = $explicitFieldType;
         }
 
         return $request;
