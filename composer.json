@@ -21,7 +21,7 @@
         "silverstripe/framework": "^6",
         "silverstripe/reports": "^6",
         "silverstripe/silverstripe-forager": "dev-feature/v2-silverstripe-6",
-        "silverstripe/silverstripe-search-client-php": "dev-main",
+        "silverstripe/silverstripe-search-client-php": "^0.0.2-alpha",
         "guzzlehttp/guzzle": "^7.9"
     },
     "require-dev": {
