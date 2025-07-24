@@ -23,7 +23,6 @@ use Silverstripe\Search\Client\Client;
 use Silverstripe\Search\Client\Model\DocumentListRequest;
 use Silverstripe\Search\Client\Model\PaginationNoTotals;
 use Silverstripe\Search\Client\Model\Schema;
-use stdClass;
 use Throwable;
 
 class BifrostService implements IndexingInterface
