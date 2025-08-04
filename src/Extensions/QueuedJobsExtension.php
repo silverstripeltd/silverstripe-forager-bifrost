@@ -29,10 +29,19 @@ class QueuedJobsExtension extends Extension
         }
 
         if (!method_exists($e, 'getResponse')) {
+            $job->addMessage(
+                json_encode(['ResponseCode' => $e->getCode(), 'ResponseMessage' => $e->getMessage()]),
+                'ERROR'
+            );
+
             return;
         }
 
-        $job->addMessage(json_encode(['ApiResponse' => (string) $e->getResponse()->getBody()]), 'ERROR');
+        $job->addMessage(json_encode([
+            'ResponseCode' => $e->getCode(),
+            'ResponseMessage' => $e->getMessage(),
+            'ApiResponse' => (string) $e->getResponse()->getBody(),
+        ]), 'ERROR');
     }
 
 }
