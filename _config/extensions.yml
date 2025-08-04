@@ -10,3 +10,12 @@ SilverStripe\Assets\File:
 SilverStripe\AssetAdmin\Forms\FileFormFactory:
   extensions:
     ForagerBifrostFileFormExtension: SilverStripe\ForagerBifrost\Extensions\FileFormExtension
+
+---
+Name: 'forager-bifrost-extensions-queuedjobs'
+Only:
+  moduleexists: 'symbiote/silverstripe-queuedjobs'
+---
+Symbiote\QueuedJobs\Services\QueuedJobService:
+  extensions:
+    ForagerBifrostQueuedJobsExtension: SilverStripe\ForagerBifrost\Extensions\QueuedJobsExtension
