@@ -1,6 +1,6 @@
 {
     "name": "silverstripe/silverstripe-forager-bifrost",
-    "description": "A Silverstripe Search add-on for silverstripe/silverstripe-forager",
+    "description": "A Silverstripe Search adaptor for silverstripe/silverstripe-forager",
     "type": "silverstripe-vendormodule",
     "license": "BSD-3-Clause",
     "homepage": "https://github.com/silverstripeltd/silverstripe-forager-bifrost",
