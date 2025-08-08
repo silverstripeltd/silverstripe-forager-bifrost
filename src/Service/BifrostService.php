@@ -233,7 +233,7 @@ class BifrostService implements IndexingInterface
     {
         $docs = [];
 
-        foreach (array_keys($this->getConfiguration()->getIndexSuffixes()) as $indexSuffix) {
+        foreach (array_keys($this->getConfiguration()->getIndexConfigurations()) as $indexSuffix) {
             // This is going to return results as a stdClass
             $response = $this->getClient()->documentsGet(
                 $this->getConfiguration()->environmentizeIndex($indexSuffix),
@@ -335,7 +335,7 @@ class BifrostService implements IndexingInterface
     {
         $schemas = [];
 
-        foreach (array_keys($this->getConfiguration()->getIndexSuffixes()) as $indexSuffix) {
+        foreach (array_keys($this->getConfiguration()->getIndexConfigurations()) as $indexSuffix) {
             $this->validateIndexConfiguration($indexSuffix);
 
             $indexName = $this->getConfiguration()->environmentizeIndex($indexSuffix);
