@@ -136,7 +136,7 @@ class BifrostService implements IndexingInterface
                 ));
             }
 
-            $indexes = $this->getConfiguration()->getIndexesForDocument($document);
+            $indexes = $this->getConfiguration()->getIndexSuffixesForDocument($document);
 
             foreach (array_keys($indexes) as $indexSuffix) {
                 if (!isset($documentMap[$indexSuffix])) {
@@ -233,7 +233,7 @@ class BifrostService implements IndexingInterface
     {
         $docs = [];
 
-        foreach (array_keys($this->getConfiguration()->getIndexes()) as $indexSuffix) {
+        foreach (array_keys($this->getConfiguration()->getIndexSuffixes()) as $indexSuffix) {
             // This is going to return results as a stdClass
             $response = $this->getClient()->documentsGet(
                 $this->getConfiguration()->environmentizeIndex($indexSuffix),
@@ -335,7 +335,7 @@ class BifrostService implements IndexingInterface
     {
         $schemas = [];
 
-        foreach (array_keys($this->getConfiguration()->getIndexes()) as $indexSuffix) {
+        foreach (array_keys($this->getConfiguration()->getIndexSuffixes()) as $indexSuffix) {
             $this->validateIndexConfiguration($indexSuffix);
 
             $indexName = $this->getConfiguration()->environmentizeIndex($indexSuffix);
@@ -463,7 +463,7 @@ class BifrostService implements IndexingInterface
         // definitions
 
         // Loop through each Class that has a definition for this index
-        foreach ($this->getConfiguration()->getClassesForIndex($index) as $class) {
+        foreach ($this->getConfiguration()->getClassesForIndexSuffix($index) as $class) {
             // Loop through each field that has been defined for that Class
             foreach ($this->getConfiguration()->getFieldsForClass($class) as $field) {
                 // Check to see if a Type has been defined, or just default to what we have defined
@@ -532,7 +532,7 @@ class BifrostService implements IndexingInterface
                 continue;
             }
 
-            $indexes = $this->getConfiguration()->getIndexesForDocument($document);
+            $indexes = $this->getConfiguration()->getIndexSuffixesForDocument($document);
 
             if (!$indexes) {
                 Injector::inst()->get(LoggerInterface::class)->warn(
