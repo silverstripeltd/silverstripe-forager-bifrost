@@ -76,9 +76,9 @@ class BifrostService implements IndexingInterface
      * @throws IndexingServiceException
      * @throws NotFoundExceptionInterface
      */
-    public function addDocument(DocumentInterface $document): ?string
+    public function addDocument(DocumentInterface $document, array $indexSuffixes): ?string
     {
-        $processedIds = $this->addDocuments([$document]);
+        $processedIds = $this->addDocuments([$document], $indexSuffixes);
 
         return array_shift($processedIds);
     }
@@ -88,12 +88,18 @@ class BifrostService implements IndexingInterface
      * @throws IndexingServiceException
      * @throws NotFoundExceptionInterface
      */
-    public function addDocuments(array $documents): array
+    public function addDocuments(array $documents, array $indexSuffixes): array
     {
         $documentMap = $this->getContentMapForDocuments($documents);
         $processedIds = [];
 
-        foreach ($documentMap as $indexSuffix => $docsToAdd) {
+        foreach ($indexSuffixes as $indexSuffix) {
+            $docsToAdd = $documentMap[$indexSuffix] ?? null;
+
+            if (!$docsToAdd) {
+                continue;
+            }
+
             $response = $this->getClient()->documentsPost(
                 $this->getConfiguration()->environmentizeIndex($indexSuffix),
                 $docsToAdd
@@ -112,9 +118,9 @@ class BifrostService implements IndexingInterface
         return array_unique($processedIds);
     }
 
-    public function removeDocument(DocumentInterface $document): ?string
+    public function removeDocument(DocumentInterface $document, array $indexSuffixes): ?string
     {
-        $processedIds = $this->removeDocuments([$document]);
+        $processedIds = $this->removeDocuments([$document], $indexSuffixes);
 
         return array_shift($processedIds);
     }
@@ -122,7 +128,7 @@ class BifrostService implements IndexingInterface
     /**
      * @param DocumentInterface[] $documents
      */
-    public function removeDocuments(array $documents): array
+    public function removeDocuments(array $documents, array $indexSuffixes): array
     {
         $documentMap = [];
         $processedIds = [];
@@ -136,9 +142,7 @@ class BifrostService implements IndexingInterface
                 ));
             }
 
-            $indexes = $this->getConfiguration()->getIndexesForDocument($document);
-
-            foreach (array_keys($indexes) as $indexSuffix) {
+            foreach ($indexSuffixes as $indexSuffix) {
                 if (!isset($documentMap[$indexSuffix])) {
                     $documentMap[$indexSuffix] = [];
                 }
@@ -233,7 +237,7 @@ class BifrostService implements IndexingInterface
     {
         $docs = [];
 
-        foreach (array_keys($this->getConfiguration()->getIndexes()) as $indexSuffix) {
+        foreach (array_keys($this->getConfiguration()->getIndexConfigurations()) as $indexSuffix) {
             // This is going to return results as a stdClass
             $response = $this->getClient()->documentsGet(
                 $this->getConfiguration()->environmentizeIndex($indexSuffix),
@@ -335,7 +339,7 @@ class BifrostService implements IndexingInterface
     {
         $schemas = [];
 
-        foreach (array_keys($this->getConfiguration()->getIndexes()) as $indexSuffix) {
+        foreach (array_keys($this->getConfiguration()->getIndexConfigurations()) as $indexSuffix) {
             $this->validateIndexConfiguration($indexSuffix);
 
             $indexName = $this->getConfiguration()->environmentizeIndex($indexSuffix);
@@ -532,7 +536,7 @@ class BifrostService implements IndexingInterface
                 continue;
             }
 
-            $indexes = $this->getConfiguration()->getIndexesForDocument($document);
+            $indexes = $this->getConfiguration()->getIndexConfigurationsForDocument($document);
 
             if (!$indexes) {
                 Injector::inst()->get(LoggerInterface::class)->warn(

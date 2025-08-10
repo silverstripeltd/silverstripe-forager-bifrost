@@ -25,7 +25,7 @@ class GetSynonymCollectionsAdaptor implements GetSynonymSetsAdaptorInterface
     {
         $synonymCollections = SynonymCollections::create();
 
-        foreach (array_keys($this->configuration->getIndexes()) as $engineSuffix) {
+        foreach (array_keys($this->configuration->getIndexConfigurations()) as $engineSuffix) {
             $synonymCollections->add(SynonymCollection::create($engineSuffix));
         }
 
