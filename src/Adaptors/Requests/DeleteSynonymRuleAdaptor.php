@@ -2,10 +2,11 @@
 
 namespace SilverStripe\ForagerBifrost\Adaptors\Requests;
 
-use Elastic\EnterpriseSearch\AppSearch\Request\DeleteSynonymSet;
-use Elastic\EnterpriseSearch\Client;
-use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forager\Interfaces\Requests\DeleteSynonymRuleAdaptor as DeleteSynonymRuleAdaptorInterface;
+use SilverStripe\Forager\Service\IndexConfiguration;
+use Silverstripe\Search\Client\Client;
+use Silverstripe\Search\Client\Exception\SynonymRuleDeleteNotFoundException;
+use Silverstripe\Search\Client\Exception\SynonymRuleDeleteUnprocessableEntityException;
 
 class DeleteSynonymRuleAdaptor implements DeleteSynonymRuleAdaptorInterface
 {
@@ -21,15 +22,19 @@ class DeleteSynonymRuleAdaptor implements DeleteSynonymRuleAdaptorInterface
         $this->client = $client;
     }
 
+    /**
+     * @throws SynonymRuleDeleteNotFoundException
+     * @throws SynonymRuleDeleteUnprocessableEntityException
+     */
     public function process(int|string $synonymCollectionId, int|string $synonymRuleId): bool
     {
-        $request = Injector::inst()->create(DeleteSynonymSet::class, $synonymCollectionId, $synonymRuleId);
+        // Silverstripe Search simply uses the engine name as the Synonym Collection ID
+        $engineName = IndexConfiguration::singleton()->environmentizeIndex($synonymCollectionId);
 
         // Should either be successful or throw an exception, which we'll let fly
-        $body = $this->client->appSearch()->deleteSynonymSet($request)->asString();
-        $body = json_decode($body, true);
+        $response = $this->client->synonymRuleDelete($synonymRuleId, $engineName);
 
-        return $body['success'];
+        return $response->getSuccess();
     }
 
 }

@@ -3,49 +3,21 @@ Name: forager-bifrost
 Only:
   envvarset: 'BIFROST_MANAGEMENT_API_KEY'
 After:
-  - 'silverstripe-forager-elastic-enterprise'
   - 'search-forager-default'
 ---
 SilverStripe\Core\Injector\Injector:
   SilverStripe\Forager\Service\IndexConfiguration:
     constructor:
-      index_variant: '`BIFROST_ENGINE_PREFIX`'
+      indexPrefix: '`BIFROST_ENGINE_PREFIX`'
   SilverStripe\Forager\Interfaces\IndexingInterface:
     class: SilverStripe\ForagerBifrost\Service\BifrostService
     constructor:
-      client: '%$Elastic\EnterpriseSearch\Client.managementClient'
+      client: '%$Silverstripe\Search\Client\Client.managementClient'
       configuration: '%$SilverStripe\Forager\Service\IndexConfiguration'
       builder: '%$SilverStripe\Forager\Service\DocumentBuilder'
-  Elastic\EnterpriseSearch\Client.managementClient:
+  Silverstripe\Search\Client\Client.managementClient:
     factory: SilverStripe\ForagerBifrost\Service\ClientFactory
     constructor:
       host: '`BIFROST_ENDPOINT`'
       token: '`BIFROST_MANAGEMENT_API_KEY`'
-      http_client: '%$GuzzleHttp\Client'
-  Elastic\EnterpriseSearch\AppSearch\Request\CreateEngine:
-    class: SilverStripe\ForagerBifrost\Service\Requests\PostEngine
-  Elastic\EnterpriseSearch\AppSearch\Request\DeleteDocuments:
-    class: SilverStripe\ForagerBifrost\Service\Requests\DeleteDocuments
-  Elastic\EnterpriseSearch\AppSearch\Request\GetSchema:
-    class: SilverStripe\ForagerBifrost\Service\Requests\GetSchema
-  Elastic\EnterpriseSearch\AppSearch\Request\IndexDocuments:
-    class: SilverStripe\ForagerBifrost\Service\Requests\PostDocuments
-  Elastic\EnterpriseSearch\AppSearch\Request\ListDocuments:
-    class: SilverStripe\ForagerBifrost\Service\Requests\PostDocumentsList
-  Elastic\EnterpriseSearch\AppSearch\Request\ListEngines:
-    class: SilverStripe\ForagerBifrost\Service\Requests\PostEngines
-  Elastic\EnterpriseSearch\AppSearch\Request\PutSchema:
-    class: SilverStripe\ForagerBifrost\Service\Requests\PostSchema
-
-SilverStripe\ForagerElasticEnterprise\Service\EnterpriseSearchService:
-  # Append to existing valid_field_types definition
-  valid_field_types:
-    binary: 'binary'
-  # Maximum search Document size: 25 MB
-  max_document_size: 26214400
-
-## customise the dataobject fields for Bifrost compatability
-SilverStripe\Forager\DataObject\DataObjectDocument:
-  id_field: record_id
-  base_class_field: record_base_class
-  page_content_field: page_content
+      httpClient: '%$GuzzleHttp\Client'
