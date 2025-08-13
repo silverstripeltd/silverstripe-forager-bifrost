@@ -232,23 +232,21 @@ class BifrostServiceTest extends SapphireTest
         $documents[] = DataObjectDocument::create($documentThree);
 
         $expectedMap = [
-            'content' => [
-                [
-                    'id' => sprintf('silverstripe_foragerbifrost_tests_fake_dataobjectfake_%s', $documentOne->ID),
-                    'title' => 'Dataobject one',
-                    'html_text' => 'WHAT ARE WE YELLING ABOUT? Then a break Then a new line and a tab ',
-                    'record_base_class' => DataObjectFake::class,
-                    'record_id' => $documentOne->ID,
-                    'source_class' => DataObjectFake::class,
-                ],
-                [
-                    'id' => sprintf('silverstripe_foragerbifrost_tests_fake_dataobjectfake_%s', $documentThree->ID),
-                    'title' => 'Dataobject three',
-                    'html_text' => 'WHAT ARE WE YELLING ABOUT? Then a break Then a new line and a tab ',
-                    'record_base_class' => DataObjectFake::class,
-                    'record_id' => $documentThree->ID,
-                    'source_class' => DataObjectFake::class,
-                ],
+            [
+                'id' => sprintf('silverstripe_foragerbifrost_tests_fake_dataobjectfake_%s', $documentOne->ID),
+                'title' => 'Dataobject one',
+                'html_text' => 'WHAT ARE WE YELLING ABOUT? Then a break Then a new line and a tab ',
+                'record_base_class' => DataObjectFake::class,
+                'record_id' => $documentOne->ID,
+                'source_class' => DataObjectFake::class,
+            ],
+            [
+                'id' => sprintf('silverstripe_foragerbifrost_tests_fake_dataobjectfake_%s', $documentThree->ID),
+                'title' => 'Dataobject three',
+                'html_text' => 'WHAT ARE WE YELLING ABOUT? Then a break Then a new line and a tab ',
+                'record_base_class' => DataObjectFake::class,
+                'record_id' => $documentThree->ID,
+                'source_class' => DataObjectFake::class,
             ],
         ];
 
@@ -257,7 +255,7 @@ class BifrostServiceTest extends SapphireTest
         $reflectionMethod->setAccessible(true);
 
         // Invoke our method which will trigger 2 API calls, and we're expecting the second API call to trigger an error
-        $this->assertEquals($expectedMap, $reflectionMethod->invoke($this->searchService, $documents));
+        $this->assertEquals($expectedMap, $reflectionMethod->invoke($this->searchService, 'content', $documents));
     }
 
     public function testConfigureNewField(): void
@@ -702,7 +700,7 @@ class BifrostServiceTest extends SapphireTest
             '321',
         ];
 
-        $resultIds = $this->searchService->addDocuments($documents, ['content']);
+        $resultIds = $this->searchService->addDocuments('content', $documents);
 
         $this->assertEqualsCanonicalizing($expectedIds, $resultIds);
         // And make sure nothing is left in our Response Stack. This would indicate that every Request we expect to make
@@ -713,7 +711,7 @@ class BifrostServiceTest extends SapphireTest
     public function testAddDocumentsEmpty(): void
     {
         // Adding an empty array of documents, we would expect no API calls to be made
-        $resultIds = $this->searchService->addDocuments([], ['content']);
+        $resultIds = $this->searchService->addDocuments('content', []);
 
         // We would expect the results to be empty
         $this->assertEqualsCanonicalizing([], $resultIds);
@@ -739,7 +737,7 @@ class BifrostServiceTest extends SapphireTest
         // Append this mock response to our stack
         $this->mock->append(new Response(200, $headers, $body));
 
-        $resultId = $this->searchService->addDocument($document, ['content']);
+        $resultId = $this->searchService->addDocument('content', $document);
 
         $this->assertEquals('doc-123', $resultId);
         // And make sure nothing is left in our Response Stack. This would indicate that every Request we expect to make
@@ -763,7 +761,7 @@ class BifrostServiceTest extends SapphireTest
         $this->mock->append(new Response(200, $headers, $body));
 
         // Kinda just checking that the array_shift correctly returns null if no results were presented from Bifrost
-        $resultId = $this->searchService->addDocument($document, ['content']);
+        $resultId = $this->searchService->addDocument('content', $document);
 
         $this->assertNull($resultId);
         // And make sure nothing is left in our Response Stack. This would indicate that every Request we expect to make
@@ -819,7 +817,7 @@ class BifrostServiceTest extends SapphireTest
             '123',
         ];
 
-        $resultIds = $this->searchService->addDocuments($documents, ['content']);
+        $resultIds = $this->searchService->addDocuments('content', $documents);
 
         $this->assertEqualsCanonicalizing($expectedIds, $resultIds);
         // And make sure nothing is left in our Response Stack. This would indicate that every Request we expect to make
@@ -830,7 +828,7 @@ class BifrostServiceTest extends SapphireTest
     public function testRemoveDocumentsEmpty(): void
     {
         // Removing an empty array of documents, we would expect no API calls to be made
-        $resultIds = $this->searchService->removeDocuments([], ['content']);
+        $resultIds = $this->searchService->removeDocuments('content', []);
 
         // We would expect the results to be empty
         $this->assertEqualsCanonicalizing([], $resultIds);
@@ -858,7 +856,7 @@ class BifrostServiceTest extends SapphireTest
 
         $expectedId = sprintf('silverstripe_searchservice_tests_fake_dataobjectfake_%s', $documentOne->ID);
 
-        $resultId = $this->searchService->removeDocument($document, ['content']);
+        $resultId = $this->searchService->removeDocument('content', $document);
 
         $this->assertEquals($expectedId, $resultId);
         // And make sure nothing is left in our Response Stack. This would indicate that every Request we expect to make
@@ -882,7 +880,7 @@ class BifrostServiceTest extends SapphireTest
         $this->mock->append(new Response(200, $headers, $body));
 
         // Kinda just checking that the array_shift correctly returns null if no results were presented from Bifrost
-        $resultId = $this->searchService->removeDocument($document, ['content']);
+        $resultId = $this->searchService->removeDocument('content', $document);
 
         $this->assertNull($resultId);
         // And make sure nothing is left in our Response Stack. This would indicate that every Request we expect to make

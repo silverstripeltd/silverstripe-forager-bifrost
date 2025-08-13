@@ -76,9 +76,9 @@ class BifrostService implements IndexingInterface
      * @throws IndexingServiceException
      * @throws NotFoundExceptionInterface
      */
-    public function addDocument(DocumentInterface $document, array $indexSuffixes): ?string
+    public function addDocument(string $indexSuffix, DocumentInterface $document): ?string
     {
-        $processedIds = $this->addDocuments([$document], $indexSuffixes);
+        $processedIds = $this->addDocuments($indexSuffix, [$document]);
 
         return array_shift($processedIds);
     }
@@ -88,39 +88,35 @@ class BifrostService implements IndexingInterface
      * @throws IndexingServiceException
      * @throws NotFoundExceptionInterface
      */
-    public function addDocuments(array $documents, array $indexSuffixes): array
+    public function addDocuments(string $indexSuffix, array $documents): array
     {
-        $documentMap = $this->getContentMapForDocuments($documents);
+        $documentsArray = $this->getContentMapForDocuments($indexSuffix, $documents);
         $processedIds = [];
 
-        foreach ($indexSuffixes as $indexSuffix) {
-            $docsToAdd = $documentMap[$indexSuffix] ?? null;
+        if (!$documentsArray) {
+            return [];
+        }
 
-            if (!$docsToAdd) {
-                continue;
-            }
+        $response = $this->getClient()->documentsPost(
+            $this->getConfiguration()->environmentizeIndex($indexSuffix),
+            $documentsArray
+        );
 
-            $response = $this->getClient()->documentsPost(
-                $this->getConfiguration()->environmentizeIndex($indexSuffix),
-                $docsToAdd
-            );
+        if (!$response) {
+            return [];
+        }
 
-            if (!$response) {
-                continue;
-            }
-
-            foreach ($response as $documentResponse) {
-                $processedIds[] = $documentResponse->getId();
-            }
+        foreach ($response as $documentResponse) {
+            $processedIds[] = $documentResponse->getId();
         }
 
         // One document could have existed in multiple indexes, we only care to track it once
         return array_unique($processedIds);
     }
 
-    public function removeDocument(DocumentInterface $document, array $indexSuffixes): ?string
+    public function removeDocument(string $indexSuffix, DocumentInterface $document): ?string
     {
-        $processedIds = $this->removeDocuments([$document], $indexSuffixes);
+        $processedIds = $this->removeDocuments($indexSuffix, [$document]);
 
         return array_shift($processedIds);
     }
@@ -128,7 +124,7 @@ class BifrostService implements IndexingInterface
     /**
      * @param DocumentInterface[] $documents
      */
-    public function removeDocuments(array $documents, array $indexSuffixes): array
+    public function removeDocuments(string $indexSuffix, array $documents): array
     {
         $documentMap = [];
         $processedIds = [];
@@ -142,13 +138,11 @@ class BifrostService implements IndexingInterface
                 ));
             }
 
-            foreach ($indexSuffixes as $indexSuffix) {
-                if (!isset($documentMap[$indexSuffix])) {
-                    $documentMap[$indexSuffix] = [];
-                }
-
-                $documentMap[$indexSuffix][] = $document->getIdentifier();
+            if (!isset($documentMap[$indexSuffix])) {
+                $documentMap[$indexSuffix] = [];
             }
+
+            $documentMap[$indexSuffix][] = $document->getIdentifier();
         }
 
         foreach ($documentMap as $indexSuffix => $idsToRemove) {
@@ -509,7 +503,7 @@ class BifrostService implements IndexingInterface
      * @throws IndexingServiceException
      * @throws NotFoundExceptionInterface
      */
-    private function getContentMapForDocuments(array $documents): array
+    private function getContentMapForDocuments(string $indexSuffix, array $documents): array
     {
         $documentMap = [];
 
@@ -527,7 +521,7 @@ class BifrostService implements IndexingInterface
             }
 
             try {
-                $fields = $this->getBuilder()->toArray($document);
+                $documentToArray = $this->getBuilder()->toArray($document);
             } catch (IndexConfigurationException $e) {
                 Injector::inst()->get(LoggerInterface::class)->warning(
                     sprintf('Failed to convert document to array: %s', $e->getMessage())
@@ -546,13 +540,19 @@ class BifrostService implements IndexingInterface
                 continue;
             }
 
-            foreach (array_keys($indexes) as $indexSuffix) {
-                if (!isset($documentMap[$indexSuffix])) {
-                    $documentMap[$indexSuffix] = [];
-                }
+            if (!in_array($indexSuffix, array_keys($indexes), true)) {
+                Injector::inst()->get(LoggerInterface::class)->warn(
+                    sprintf(
+                        '%s is not a valid index for document %s, skipping...',
+                        $indexSuffix,
+                        $document->getIdentifier()
+                    )
+                );
 
-                $documentMap[$indexSuffix][] = $fields;
+                continue;
             }
+
+            $documentMap[] = $documentToArray;
         }
 
         return $documentMap;
