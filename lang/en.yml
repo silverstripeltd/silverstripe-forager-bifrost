@@ -1,4 +1,4 @@
 en:
   SilverStripe\ForagerBifrost\Extensions\FileFormExtension:
     FILE_LIMIT_MESSAGE: "Document search extraction limit is {limit}"
-    LARGE_FILE_WARNING: "File size is {size} which exceeds the search extraction limit of {limit}"
+    LARGE_FILE_WARNING: "Text contained within this {size} file cannot be indexed for search. The file size limit for text extraction is {limit}."
