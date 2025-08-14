@@ -78,7 +78,8 @@ class FileFormExtension extends Extension
                     ['class' => 'alert alert-warning'],
                     _t(
                         self::class . '.LARGE_FILE_WARNING',
-                        'Text contained within this {size} file cannot be indexed for search. The file size limit for text extraction is {limit}.',
+                        'Text contained within this {size} file cannot be indexed for search. '
+                            . 'The file size limit for text extraction is {limit}.',
                         [
                             'size' => $file->getSize(),
                             'limit' => SearchFile::sizeLimit(),
