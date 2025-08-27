@@ -139,7 +139,8 @@ class FileFormExtensionTest extends SapphireTest
 
         $this->assertInstanceOf(LiteralField::class, $field);
         $this->assertEquals(
-            '<p class="alert alert-warning">File size is 16 MB which exceeds the search extraction limit of 15 MB</p>',
+            '<p class="alert alert-warning">Text contained within this 16 MB file cannot be indexed for search.'
+                . ' The file size limit for text extraction is 15 MB.</p>',
             $field->getContent()
         );
     }
