@@ -108,7 +108,7 @@ class BifrostServiceTest extends SapphireTest
             'record_id' => 'text',
         ];
 
-        $fields = $this->searchService->getConfiguration()->getFieldsForIndex('content');
+        $fields = $this->searchService->getConfiguration()->getIndexDataForSuffix('content')->getFields();
 
         // This method is private, so we need Reflection to access it
         $reflectionMethod = new ReflectionMethod(BifrostService::class, 'getSchemaForFields');

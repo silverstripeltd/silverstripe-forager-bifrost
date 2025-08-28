@@ -339,7 +339,9 @@ class BifrostService implements IndexingInterface
             $indexName = $this->getConfiguration()->environmentizeIndex($indexSuffix);
 
             // Fetch the Schema, as it is currently configured in our application
-            $definedSchema = $this->getSchemaForFields($this->getConfiguration()->getFieldsForIndex($indexSuffix));
+            $definedSchema = $this->getSchemaForFields(
+                $this->getConfiguration()->getIndexDataForSuffix($indexSuffix)->getFields()
+            );
             // Trigger an update to Bifröst with our current configured Schema
             $response = $this->getClient()->schemaPost($indexName, $definedSchema);
 
@@ -461,7 +463,7 @@ class BifrostService implements IndexingInterface
         // definitions
 
         // Loop through each Class that has a definition for this index
-        foreach ($this->getConfiguration()->getClassesForIndex($index) as $class) {
+        foreach ($this->getConfiguration()->getIndexDataForSuffix($index)->getClasses() as $class) {
             // Loop through each field that has been defined for that Class
             foreach ($this->getConfiguration()->getFieldsForClass($class) as $field) {
                 // Check to see if a Type has been defined, or just default to what we have defined
