@@ -34,6 +34,13 @@ class LargeDocumentReportTest extends SapphireTest
             'Documents excluded for content ingestion in Silverstripe Search which exceeds 15 MB',
             $report->description()
         );
+
+        // Removing extension should result in a new description
+        $this->removeFileExtension();
+        $this->assertEquals(
+            'This report requires the SEARCH_INDEX_FILES environment variable and file extension.',
+            $report->description()
+        );
     }
 
     public function testColumns(): void
@@ -68,6 +75,22 @@ class LargeDocumentReportTest extends SapphireTest
 
         $this->assertCount(1, $files);
         $this->assertEquals($file21MbId, $files->first()->ID);
+    }
+
+    public function testCanView(): void
+    {
+        $report = new LargeDocumentReport();
+
+        $this->assertTrue($report->canView());
+
+        // When the extension is not present on the File then the report should not be viewable
+        $this->removeFileExtension();
+        $this->assertfalse($report->canView());
+    }
+
+    protected function removeFileExtension(): void
+    {
+        File::remove_extension(FileExtension::class);
     }
 
     protected function setUp(): void
