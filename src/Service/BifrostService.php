@@ -217,9 +217,9 @@ class BifrostService implements IndexingInterface
     /**
      * @throws IndexingServiceException
      */
-    public function getDocument(string $id): ?DocumentInterface
+    public function getDocument(string $indexSuffix, string $id): ?DocumentInterface
     {
-        $result = $this->getDocuments([$id]);
+        $result = $this->getDocuments($indexSuffix, [$id]);
 
         return $result[0] ?? null;
     }
@@ -227,35 +227,33 @@ class BifrostService implements IndexingInterface
     /**
      * @return DocumentInterface[]
      */
-    public function getDocuments(array $ids): array
+    public function getDocuments(string $indexSuffix, array $ids): array
     {
         $docs = [];
 
-        foreach (array_keys($this->getConfiguration()->getIndexConfigurations()) as $indexSuffix) {
-            // This is going to return results as a stdClass
-            $response = $this->getClient()->documentsGet(
-                $this->getConfiguration()->environmentizeIndex($indexSuffix),
-                $ids
-            );
-            // Convert to associative, because this is what the builder requires
-            $response = json_decode(json_encode($response), true);
+        // This is going to return results as a stdClass
+        $response = $this->getClient()->documentsGet(
+            $this->getConfiguration()->environmentizeIndex($indexSuffix),
+            $ids
+        );
+        // Convert to associative, because this is what the builder requires
+        $response = json_decode(json_encode($response), true);
 
-            $results = $response['results'] ?? null;
+        $results = $response['results'] ?? null;
 
-            if (!$results) {
+        if (!$results) {
+            return [];
+        }
+
+        foreach ($results as $data) {
+            $document = $this->getBuilder()->fromArray($data);
+
+            if (!$document) {
                 continue;
             }
 
-            foreach ($results as $data) {
-                $document = $this->getBuilder()->fromArray($data);
-
-                if (!$document) {
-                    continue;
-                }
-
-                // Stored by identifier as the key just in case one record exists in multiple indexes
-                $docs[$document->getIdentifier()] = $document;
-            }
+            // Stored by identifier as the key
+            $docs[$document->getIdentifier()] = $document;
         }
 
         return array_values($docs);

@@ -108,7 +108,8 @@ class BifrostServiceTest extends SapphireTest
             'record_id' => 'text',
         ];
 
-        $fields = $this->searchService->getConfiguration()->getIndexDataForSuffix('content')->getFields();
+        $fields = $this->searchService->getConfiguration()
+            ->getIndexDataForSuffix('content')->getFields();
 
         // This method is private, so we need Reflection to access it
         $reflectionMethod = new ReflectionMethod(BifrostService::class, 'getSchemaForFields');
@@ -526,7 +527,7 @@ class BifrostServiceTest extends SapphireTest
         // Append this mock response to our stack
         $this->mock->append(new Response(200, $headers, $body));
 
-        $documents = $this->searchService->getDocuments([$idOne, $idTwo]);
+        $documents = $this->searchService->getDocuments('content', [$idOne, $idTwo]);
 
         // Check that the total matches what was in the meta response
         $this->assertCount(2, $documents);
@@ -565,7 +566,7 @@ class BifrostServiceTest extends SapphireTest
         // Append this mock response to our stack
         $this->mock->append(new Response(200, $headers, $body));
 
-        $documents = $this->searchService->getDocuments([123, 321]);
+        $documents = $this->searchService->getDocuments('content', [123, 321]);
 
         // Check that the total matches what was in the meta response
         $this->assertCount(0, $documents);
@@ -622,7 +623,7 @@ class BifrostServiceTest extends SapphireTest
         // Append this mock response to our stack
         $this->mock->append(new Response(200, $headers, $body));
 
-        $resultDocument = $this->searchService->getDocument($id);
+        $resultDocument = $this->searchService->getDocument('content', $id);
 
         // Check that the total matches what was in the meta response
         $this->assertNotNull($resultDocument);
@@ -654,7 +655,7 @@ class BifrostServiceTest extends SapphireTest
         // Append this mock response to our stack
         $this->mock->append(new Response(200, $headers, $body));
 
-        $document = $this->searchService->getDocument(123);
+        $document = $this->searchService->getDocument('content', 123);
 
         // Check that there were no results (so we'd expect null for our one expected document)
         $this->assertNull($document);

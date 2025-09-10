@@ -20,7 +20,7 @@
         "php": "^8.3",
         "silverstripe/framework": "^6",
         "silverstripe/reports": "^6",
-        "silverstripe/silverstripe-forager": "dev-feature/feature/v2-fluent-support-with-context",
+        "silverstripe/silverstripe-forager": "2.0.x-dev",
         "silverstripe/silverstripe-search-client-php": "0.0.7-alpha",
         "guzzlehttp/guzzle": "^7.9"
     },
@@ -48,5 +48,10 @@
     },
     "scripts": {
         "phpcs": "phpcs --standard=phpcs.xml --extensions=php --encoding=utf-8"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "2.0.x-dev"
+        }
     }
 }
