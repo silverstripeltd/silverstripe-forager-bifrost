@@ -1,6 +1,6 @@
 {
     "name": "silverstripe/silverstripe-forager-bifrost",
-    "description": "A Silverstripe Search add-on for silverstripe/silverstripe-forager",
+    "description": "A Silverstripe Search adaptor for silverstripe/silverstripe-forager",
     "type": "silverstripe-vendormodule",
     "license": "BSD-3-Clause",
     "homepage": "https://github.com/silverstripeltd/silverstripe-forager-bifrost",
@@ -17,26 +17,17 @@
         "Bifröst"
     ],
     "require": {
-        "php": "^8.1",
-        "silverstripe/framework": "^5",
-        "silverstripe/reports": "^5",
-        "silverstripe/silverstripe-forager-elastic-enterprise": "^1.1",
-        "guzzlehttp/guzzle": "^7"
+        "php": "^8.3",
+        "silverstripe/framework": "^6",
+        "silverstripe/reports": "^6",
+        "silverstripe/silverstripe-forager": "2.0.x-dev",
+        "silverstripe/silverstripe-search-client-php": "0.0.7-alpha",
+        "guzzlehttp/guzzle": "^7.9"
     },
     "require-dev": {
-        "silverstripe/recipe-cms": "^5",
-        "phpunit/phpunit": "^9.6.19",
-        "slevomat/coding-standard": "^8.8"
-    },
-    "repositories": {
-        "silverstripe/silverstripe-forager": {
-            "type": "git",
-            "url": "https://github.com/silverstripeltd/silverstripe-forager.git"
-        },
-        "silverstripe/silverstripe-forager-elastic-enterprise": {
-            "type": "git",
-            "url": "https://github.com/silverstripeltd/silverstripe-forager-elastic-enterprise.git"
-        }
+        "silverstripe/recipe-cms": "^6",
+        "phpunit/phpunit": "^11.3",
+        "slevomat/coding-standard": "~8.18.0"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -57,5 +48,10 @@
     },
     "scripts": {
         "phpcs": "phpcs --standard=phpcs.xml --extensions=php --encoding=utf-8"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "2.0.x-dev"
+        }
     }
 }

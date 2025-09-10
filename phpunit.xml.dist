@@ -5,12 +5,16 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
-    <filter>
-        <whitelist addUncoveredFilesFromWhitelist="true">
+    <source>
+        <include>
             <directory suffix=".php">src/</directory>
-            <exclude>
-                <directory suffix=".php">tests/</directory>
-            </exclude>
-        </whitelist>
-    </filter>
+        </include>
+        <exclude>
+            <directory suffix=".php">tests/</directory>
+        </exclude>
+    </source>
+    <php>
+        <env name="BIFROST_ENDPOINT" value="https://fakeplace.com" force="true"/>
+        <env name="BIFROST_MANAGEMENT_API_KEY" value="fakeApiKey" force="true"/>
+    </php>
 </phpunit>

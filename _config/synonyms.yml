@@ -3,11 +3,9 @@ Name: forager-bifrost-synonyms
 Only:
   envvarset: 'BIFROST_MANAGEMENT_API_KEY'
 After:
-  - 'silverstripe-forager-elastic-enterprise-synonyms'
   - 'silverstripe-forager-synonyms'
 ---
 SilverStripe\Core\Injector\Injector:
-  # Adaptors provided by this module
   SilverStripe\Forager\Interfaces\Requests\CreateSynonymRuleAdaptor:
     class: SilverStripe\ForagerBifrost\Adaptors\Requests\CreateSynonymRuleAdaptor
   SilverStripe\Forager\Interfaces\Requests\GetSynonymRuleAdaptor:
@@ -18,17 +16,5 @@ SilverStripe\Core\Injector\Injector:
     class: SilverStripe\ForagerBifrost\Adaptors\Requests\UpdateSynonymRuleAdaptor
   SilverStripe\Forager\Interfaces\Requests\DeleteSynonymRuleAdaptor:
     class: SilverStripe\ForagerBifrost\Adaptors\Requests\DeleteSynonymRuleAdaptor
-  # Adaptors provided by the ElasticEnterprise dependency
   SilverStripe\Forager\Interfaces\Requests\GetSynonymCollectionsAdaptor:
-    class: SilverStripe\ForagerElasticEnterprise\Adaptors\Requests\GetSynonymCollectionsAdaptor
-  # Request overrides to work with the Bifröst API
-  Elastic\EnterpriseSearch\AppSearch\Request\DeleteSynonymSet:
-    class: SilverStripe\ForagerBifrost\Service\Requests\DeleteSynonymRule
-  Elastic\EnterpriseSearch\AppSearch\Request\GetSynonymSet:
-    class: SilverStripe\ForagerBifrost\Service\Requests\GetSynonymRule
-  Elastic\EnterpriseSearch\AppSearch\Request\ListSynonymSets:
-    class: SilverStripe\ForagerBifrost\Service\Requests\GetSynonymRules
-  Elastic\EnterpriseSearch\AppSearch\Request\CreateSynonymSet:
-    class: SilverStripe\ForagerBifrost\Service\Requests\CreateSynonymRule
-  Elastic\EnterpriseSearch\AppSearch\Request\PutSynonymSet:
-    class: SilverStripe\ForagerBifrost\Service\Requests\UpdateSynonymRule
+    class: SilverStripe\ForagerBifrost\Adaptors\Requests\GetSynonymCollectionsAdaptor

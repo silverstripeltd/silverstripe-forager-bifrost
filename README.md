@@ -9,7 +9,7 @@ This module **does not** provide any method for performing searches on your engi
   * [Installation](#installation)
   * [Engine vs Index](#engine-vs-index)
   * [Specify environment variables](#specify-environment-variables)
-    * [Understanding your engine prefix and suffix:](#understanding-your-engine-prefix-and-suffix)
+    * [Understanding your engine prefix and engine suffix:](#understanding-your-engine-prefix-and-engine-suffix)
   * [Configuration](#configuration)
     * [File attachments for content extraction](#file-attachments-for-content-extraction)
   * [Additional documentation](#additional-documentation)
@@ -40,20 +40,20 @@ To integrate with Silverstripe Search, define environment variables containing y
 
 ```
 BIFROST_ENDPOINT="https://abc.provided.domain"
-BIFROST_ENGINE_PREFIX="<engine-prefix>" # See "Understanding your engine prefix and suffix" below
+BIFROST_ENGINE_PREFIX="<enginePrefix>" # See "Understanding your engine prefix and engine suffix" below
 BIFROST_MANAGEMENT_API_KEY="abc.123.xyz"
 ```
 
-### Understanding your engine prefix and suffix:
+### Understanding your engine prefix and engine suffix:
 
 > [!IMPORTANT]
 > **TL;DR:**
-> - All Silverstripe Search engine names follow a 4 slug format like this: `search-<subscription>-<environment>-<suffix>`
-> - Your `<engine-prefix>` is everything except `-<suffix>`; so, it's just `search-<subscription>-<environment>`
+> - All Silverstripe Search engine names follow a 4 slug format like this: `search-<subscription>-<environment>-<engineSuffix>`
+> - Your `<enginePrefix>` is everything except `-<engineSuffix>`; so, it's just `search-<subscription>-<environment>`
 
 For example:
 
-| Engine                    | Engine prefix        | Engine suffix |
+| Engine name               | Engine prefix        | Engine suffix |
 |---------------------------|----------------------|---------------|
 | search-acmecorp-prod-main | search-acmecorp-prod | main          |
 | search-acmecorp-prod-inc  | search-acmecorp-prod | inc           |
@@ -64,7 +64,7 @@ For example:
 
 Because you probably have more than one environment type that you're running search on (e.g. Production and UAT), and (generally speaking) you should have different engines for each of those environments. So, you can't just hardcode the entire engine name into your project, because that code doesn't change between environments.
 
-Whenever you make a query, Forager will ask you for the "index" name; you will actually want to provide only the `<suffix>`. We will then take `BIFROST_ENGINE_PREFIX` and your `<suffix>`, put them together, and that's what will be queried. This allows you to set `BIFROST_ENGINE_PREFIX` differently for each environment, while having your `<suffix>` hardcoded in your project.
+Whenever you make a query, Forager will ask you for the "index" name; you will actually want to provide only the `<engineSuffix>`. We will then take `BIFROST_ENGINE_PREFIX` and your `<engineSuffix>`, put them together, and that's what will be queried. This allows you to set `BIFROST_ENGINE_PREFIX` differently for each environment, while having your `<engineSuffix>` hardcoded in your project.
 
 ## Configuration
 
@@ -84,7 +84,7 @@ You can specify these data types in the `options` node of your fields.
 ```yaml
 SilverStripe\Forager\Service\IndexConfiguration:
   indexes:
-    <suffix>:
+    <engineSuffix>:
       includeClasses:
         SilverStripe\CMS\Model\SiteTree:
           fields:
@@ -123,7 +123,7 @@ This field needs to contain a base 64 encoded string of binary for the file you 
 ```yaml
 SilverStripe\Forager\Service\IndexConfiguration:
   indexes:
-    <suffix>:
+    <engineSuffix>:
       includeClasses:
         SilverStripe\Assets\File:
           fields:

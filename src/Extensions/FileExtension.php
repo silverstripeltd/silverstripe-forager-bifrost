@@ -6,19 +6,19 @@ use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
 use SilverStripe\Core\Convert;
+use SilverStripe\Core\Extension;
 use SilverStripe\ForagerBifrost\Constants\SearchFile;
-use SilverStripe\ORM\DataExtension;
 
 /**
  * @property int $ContentSize
  * @method File|$this getOwner()
  */
-class FileExtension extends DataExtension
+class FileExtension extends Extension
 {
 
     /**
      * ContentSize is used for generating a report of files exceeding content size limit
-     * Although this is not a real representation of actual records not indexed in Elasticsearch,
+     * Although this is not a real representation of actual records not indexed in the Bifröst,
      * the common denominator is the file size exceeding the defined limit won't be ingested
      * Assuming that images and folders does not have text contents, we skip them for report generation
      */
