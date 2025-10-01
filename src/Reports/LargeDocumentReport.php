@@ -4,8 +4,8 @@ namespace SilverStripe\ForagerBifrost\Reports;
 
 use SilverStripe\Assets\File;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Forager\Extensions\SearchServiceExtension;
 use SilverStripe\ForagerBifrost\Constants\SearchFile;
+use SilverStripe\ForagerBifrost\Extensions\FileExtension;
 use SilverStripe\Model\List\SS_List;
 use SilverStripe\Reports\Report;
 
@@ -24,7 +24,7 @@ class LargeDocumentReport extends Report
     public function description(): string
     {
         if (!$this->isReportActive()) {
-            return 'This report requires the SearchServiceExtension being applied to Files.';
+            return 'This report requires the FileExtension being applied to Files.';
         }
 
         return sprintf(
@@ -65,7 +65,7 @@ class LargeDocumentReport extends Report
     {
         $fileClass = Injector::inst()->get(File::class);
 
-        return $fileClass->has_extension(SearchServiceExtension::class);
+        return $fileClass->has_extension(FileExtension::class);
     }
 
 }

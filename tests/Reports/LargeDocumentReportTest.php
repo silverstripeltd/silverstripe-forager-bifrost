@@ -4,7 +4,6 @@ namespace SilverStripe\ForagerBifrost\Tests\Reports;
 
 use SilverStripe\Assets\Dev\TestAssetStore;
 use SilverStripe\Assets\File;
-use SilverStripe\Core\Environment;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forager\Extensions\SearchServiceExtension;
 use SilverStripe\ForagerBifrost\Extensions\FileExtension;
@@ -38,7 +37,7 @@ class LargeDocumentReportTest extends SapphireTest
         // Removing extension should result in a new description
         $this->removeFileExtension();
         $this->assertEquals(
-            'This report requires the SearchServiceExtension being applied to Files.',
+            'This report requires the FileExtension being applied to Files.',
             $report->description()
         );
 
@@ -91,7 +90,7 @@ class LargeDocumentReportTest extends SapphireTest
 
     protected function removeFileExtension(): void
     {
-        File::remove_extension(SearchServiceExtension::class);
+        File::remove_extension(FileExtension::class);
     }
 
     protected function setUp(): void

@@ -5,7 +5,6 @@ namespace SilverStripe\ForagerBifrost\Tests\Extensions;
 use SilverStripe\Assets\Dev\TestAssetStore;
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
-use SilverStripe\Core\Environment;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forager\Extensions\SearchServiceExtension;
 use SilverStripe\ForagerBifrost\Extensions\FileExtension;

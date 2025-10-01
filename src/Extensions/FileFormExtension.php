@@ -7,7 +7,6 @@ use SilverStripe\Assets\Image;
 use SilverStripe\Control\RequestHandler;
 use SilverStripe\Core\Extension;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Forager\Extensions\SearchServiceExtension;
 use SilverStripe\ForagerBifrost\Constants\SearchFile;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
@@ -31,7 +30,7 @@ class FileFormExtension extends Extension
     ): void {
         $fileClass = Injector::inst()->get(File::class);
 
-        if (!$fileClass->hasExtension(SearchServiceExtension::class)) {
+        if (!$fileClass->hasExtension(FileExtension::class)) {
             return;
         }
 
