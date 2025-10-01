@@ -24,7 +24,7 @@ class LargeDocumentReport extends Report
     public function description(): string
     {
         if (!$this->isReportActive()) {
-            return 'This report requires the SEARCH_INDEX_FILES environment variable and file extension.';
+            return 'This report requires the SearchServiceExtension being applied to Files.';
         }
 
         return sprintf(

@@ -38,7 +38,7 @@ class LargeDocumentReportTest extends SapphireTest
         // Removing extension should result in a new description
         $this->removeFileExtension();
         $this->assertEquals(
-            'This report requires the SEARCH_INDEX_FILES environment variable and file extension.',
+            'This report requires the SearchServiceExtension being applied to Files.',
             $report->description()
         );
 
