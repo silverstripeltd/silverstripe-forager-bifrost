@@ -1,7 +1,5 @@
 ---
 Name: forager-bifrost-extensions
-Only:
-  envvarset: SEARCH_INDEX_FILES
 ---
 SilverStripe\Assets\File:
   extensions:

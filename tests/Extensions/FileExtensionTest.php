@@ -102,7 +102,6 @@ class FileExtensionTest extends SapphireTest
         parent::setUp();
 
         TestAssetStore::activate('SearchFileTest');
-        Environment::setEnv('SEARCH_INDEX_FILES', 1);
     }
 
     protected function tearDown(): void

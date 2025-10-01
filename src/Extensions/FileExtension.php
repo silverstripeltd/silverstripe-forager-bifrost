@@ -7,6 +7,8 @@ use SilverStripe\Assets\Folder;
 use SilverStripe\Assets\Image;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extension;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Forager\Extensions\SearchServiceExtension;
 use SilverStripe\ForagerBifrost\Constants\SearchFile;
 
 /**
@@ -33,6 +35,12 @@ class FileExtension extends Extension
      */
     public function updateSearchAttributes(array &$attributes = []): void
     {
+        $fileClass = Injector::inst()->get(File::class);
+
+        if (!$fileClass->hasExtension(SearchServiceExtension::class)) {
+            return;
+        }
+
         if (!isset($attributes['_attachment'])) {
             return;
         }
@@ -60,6 +68,12 @@ class FileExtension extends Extension
 
     public function onBeforeWrite(): void
     {
+        $fileClass = Injector::inst()->get(File::class);
+
+        if (!$fileClass->hasExtension(SearchServiceExtension::class)) {
+            return;
+        }
+
         $file = $this->getOwner();
 
         // Marks images and folders with zero content to exclude them from report generation
