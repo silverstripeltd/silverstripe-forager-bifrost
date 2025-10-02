@@ -1,12 +1,6 @@
 ---
 Name: forager-bifrost-extensions
-Only:
-  envvarset: SEARCH_INDEX_FILES
 ---
-SilverStripe\Assets\File:
-  extensions:
-    ForagerBifrostFileExtension: SilverStripe\ForagerBifrost\Extensions\FileExtension
-
 SilverStripe\AssetAdmin\Forms\FileFormFactory:
   extensions:
     ForagerBifrostFileFormExtension: SilverStripe\ForagerBifrost\Extensions\FileFormExtension

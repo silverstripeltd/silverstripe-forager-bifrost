@@ -6,6 +6,7 @@ use SilverStripe\Assets\File;
 use SilverStripe\Assets\Image;
 use SilverStripe\Control\RequestHandler;
 use SilverStripe\Core\Extension;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ForagerBifrost\Constants\SearchFile;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
@@ -27,6 +28,12 @@ class FileFormExtension extends Extension
         string $name = FormFactory::DEFAULT_NAME,
         array $context = []
     ): void {
+        $fileClass = Injector::inst()->get(File::class);
+
+        if (!$fileClass->hasExtension(FileExtension::class)) {
+            return;
+        }
+
         /** @var FieldList $fields */
         $fields = $form->Fields()->fieldByName('Editor.Details');
         $file = $context['Record'] ?? null;
@@ -79,7 +86,7 @@ class FileFormExtension extends Extension
                     _t(
                         self::class . '.LARGE_FILE_WARNING',
                         'Text contained within this {size} file cannot be indexed for search. '
-                            . 'The file size limit for text extraction is {limit}.',
+                        . 'The file size limit for text extraction is {limit}.',
                         [
                             'size' => $file->getSize(),
                             'limit' => SearchFile::sizeLimit(),

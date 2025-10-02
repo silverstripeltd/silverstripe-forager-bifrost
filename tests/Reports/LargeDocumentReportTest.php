@@ -4,7 +4,6 @@ namespace SilverStripe\ForagerBifrost\Tests\Reports;
 
 use SilverStripe\Assets\Dev\TestAssetStore;
 use SilverStripe\Assets\File;
-use SilverStripe\Core\Environment;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forager\Extensions\SearchServiceExtension;
 use SilverStripe\ForagerBifrost\Extensions\FileExtension;
@@ -34,6 +33,25 @@ class LargeDocumentReportTest extends SapphireTest
             'Documents excluded for content ingestion in Silverstripe Search which exceeds 15 MB',
             $report->description()
         );
+
+        // Removing extension should result in a new description
+        $this->removeFileExtension();
+        $this->assertEquals(
+            'This report requires the FileExtension being applied to Files.',
+            $report->description()
+        );
+
+    }
+
+    public function testCanView(): void
+    {
+        $report = new LargeDocumentReport();
+
+        $this->assertTrue($report->canView());
+
+        // When the extension is not present on the File then the report should not be viewable
+        $this->removeFileExtension();
+        $this->assertfalse($report->canView());
     }
 
     public function testColumns(): void
@@ -70,12 +88,16 @@ class LargeDocumentReportTest extends SapphireTest
         $this->assertEquals($file21MbId, $files->first()->ID);
     }
 
+    protected function removeFileExtension(): void
+    {
+        File::remove_extension(FileExtension::class);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
 
         TestAssetStore::activate('SearchFileTest');
-        Environment::setEnv('SEARCH_INDEX_FILES', 1);
     }
 
     protected function tearDown(): void
