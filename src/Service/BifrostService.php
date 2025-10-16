@@ -533,7 +533,7 @@ class BifrostService implements IndexingInterface
             $indexes = $this->getConfiguration()->getIndexConfigurationsForDocument($document);
 
             if (!$indexes) {
-                Injector::inst()->get(LoggerInterface::class)->warn(
+                Injector::inst()->get(LoggerInterface::class)->warning(
                     sprintf('No valid indexes found for document %s, skipping...', $document->getIdentifier())
                 );
 
@@ -541,7 +541,7 @@ class BifrostService implements IndexingInterface
             }
 
             if (!in_array($indexSuffix, array_keys($indexes), true)) {
-                Injector::inst()->get(LoggerInterface::class)->warn(
+                Injector::inst()->get(LoggerInterface::class)->warning(
                     sprintf(
                         '%s is not a valid index for document %s, skipping...',
                         $indexSuffix,

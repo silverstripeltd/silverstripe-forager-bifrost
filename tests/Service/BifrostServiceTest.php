@@ -15,6 +15,7 @@ use SilverStripe\Forager\DataObject\DataObjectDocument;
 use SilverStripe\Forager\Extensions\SearchServiceExtension;
 use SilverStripe\Forager\Service\DocumentBuilder;
 use SilverStripe\Forager\Service\IndexConfiguration;
+use SilverStripe\Forager\Service\IndexData;
 use SilverStripe\ForagerBifrost\Service\BifrostService;
 use SilverStripe\ForagerBifrost\Service\ClientFactory;
 use SilverStripe\ForagerBifrost\Tests\Fake\DataObjectFake;
@@ -255,8 +256,14 @@ class BifrostServiceTest extends SapphireTest
         $reflectionMethod = new ReflectionMethod(BifrostService::class, 'getContentMapForDocuments');
         $reflectionMethod->setAccessible(true);
 
-        // Invoke our method which will trigger 2 API calls, and we're expecting the second API call to trigger an error
-        $this->assertEquals($expectedMap, $reflectionMethod->invoke($this->searchService, 'content', $documents));
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use ($expectedMap, $reflectionMethod, $documents): void {
+                // Invoke our method which will trigger 2 API calls, and we're expecting the second API call to trigger an error
+                $this->assertEquals($expectedMap, $reflectionMethod->invoke($this->searchService, 'content', $documents));
+
+            }
+        );
     }
 
     public function testConfigureNewField(): void
@@ -700,8 +707,14 @@ class BifrostServiceTest extends SapphireTest
             'doc-123',
             '321',
         ];
+        $resultIds = [];
 
-        $resultIds = $this->searchService->addDocuments('content', $documents);
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use (&$resultIds, $documents): void {
+                $resultIds = $this->searchService->addDocuments('content', $documents);
+            }
+        );
 
         $this->assertEqualsCanonicalizing($expectedIds, $resultIds);
         // And make sure nothing is left in our Response Stack. This would indicate that every Request we expect to make
@@ -738,7 +751,12 @@ class BifrostServiceTest extends SapphireTest
         // Append this mock response to our stack
         $this->mock->append(new Response(200, $headers, $body));
 
-        $resultId = $this->searchService->addDocument('content', $document);
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use (&$resultId, $document): void {
+                $resultId = $this->searchService->addDocument('content', $document);
+            }
+        );
 
         $this->assertEquals('doc-123', $resultId);
         // And make sure nothing is left in our Response Stack. This would indicate that every Request we expect to make
@@ -761,8 +779,13 @@ class BifrostServiceTest extends SapphireTest
         // Append this mock response to our stack
         $this->mock->append(new Response(200, $headers, $body));
 
-        // Kinda just checking that the array_shift correctly returns null if no results were presented from Bifrost
-        $resultId = $this->searchService->addDocument('content', $document);
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use (&$resultId, $document): void {
+                // Kinda just checking that the array_shift correctly returns null if no results were presented from Bifrost
+                $resultId = $this->searchService->addDocument('content', $document);
+            }
+        );
 
         $this->assertNull($resultId);
         // And make sure nothing is left in our Response Stack. This would indicate that every Request we expect to make
@@ -817,8 +840,14 @@ class BifrostServiceTest extends SapphireTest
             sprintf('silverstripe_searchservice_tests_fake_dataobjectfake_%s', $documentThree->ID),
             '123',
         ];
+        $resultIds = [];
 
-        $resultIds = $this->searchService->addDocuments('content', $documents);
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use (&$resultIds, $documents): void {
+                $resultIds = $this->searchService->addDocuments('content', $documents);
+            }
+        );
 
         $this->assertEqualsCanonicalizing($expectedIds, $resultIds);
         // And make sure nothing is left in our Response Stack. This would indicate that every Request we expect to make
