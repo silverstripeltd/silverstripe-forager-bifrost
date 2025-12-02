@@ -20,7 +20,7 @@
         "php": "^8.3",
         "silverstripe/framework": "^6",
         "silverstripe/reports": "^6",
-        "silverstripe/silverstripe-forager": "2.0.0",
+        "silverstripe/silverstripe-forager": "2.0.2",
         "silverstripe/silverstripe-search-client-php": "0.0.7-alpha",
         "guzzlehttp/guzzle": "^7.9"
     },
