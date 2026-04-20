@@ -8,6 +8,7 @@ use Http\Client\Common\Plugin\AddPathPlugin;
 use Http\Client\Common\Plugin\HeaderAppendPlugin;
 use Http\Client\Common\PluginClient;
 use Http\Discovery\Psr17FactoryDiscovery;
+use Http\Discovery\Psr18ClientDiscovery;
 use SilverStripe\Core\Injector\Factory;
 use Silverstripe\Search\Client\Client;
 
@@ -48,14 +49,14 @@ class ClientFactory implements Factory
             ]),
         ];
 
-        if ($httpClient) {
-            // If a desired HTTP Client has been defined and instantiated in config (@see config.yml) then we'll
-            // apply the plugins and return it here
-            return Client::create(new PluginClient($httpClient, $plugins));
-        }
+        // If no HTTP client was provided, discover one via PSR-18
+        $httpClient ??= Psr18ClientDiscovery::find();
 
-        // If no client is defined, then it will be left up to PSR-18 "discovery"
-        return Client::create(null, $plugins);
+        return new Client(
+            new PluginClient($httpClient, $plugins),
+            Psr17FactoryDiscovery::findRequestFactory(),
+            Psr17FactoryDiscovery::findStreamFactory(),
+        );
     }
 
 }
