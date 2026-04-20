@@ -28,10 +28,11 @@ class GetSynonymRuleAdaptor implements GetSynonymRuleAdaptorInterface
         $engineName = IndexConfiguration::singleton()->environmentizeIndex($synonymCollectionId);
 
         // Should either be successful or throw an exception, which we'll let fly
-        $response = $this->client->synonymRuleGet($synonymRuleId, $engineName);
+        $response = $this->client->synonymRuleGet($engineName, $synonymRuleId);
+        $body = json_decode((string) $response->getBody());
 
-        $synonymRule = SynonymRule::create($response->getId());
-        SynonymRuleProcessor::applyStringToResult($synonymRule, $response->getSynonyms());
+        $synonymRule = SynonymRule::create($body->id);
+        SynonymRuleProcessor::applyStringToResult($synonymRule, $body->synonyms);
 
         return $synonymRule;
     }

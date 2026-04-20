@@ -21,8 +21,10 @@
         "silverstripe/framework": "^6",
         "silverstripe/reports": "^6",
         "silverstripe/silverstripe-forager": "2.0.2",
-        "silverstripe/silverstripe-search-client-php": "0.0.7-alpha",
-        "guzzlehttp/guzzle": "^7.9"
+        "silverstripe/silverstripe-search-client-php": "dev-feature/roll-your-own as 0.0.8-alpha",
+        "guzzlehttp/guzzle": "^7.9",
+        "php-http/client-common": "^2.7",
+        "php-http/discovery": "^1.20"
     },
     "require-dev": {
         "silverstripe/recipe-cms": "^6",
