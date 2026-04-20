@@ -20,10 +20,8 @@ use SilverStripe\Forager\Service\DocumentBuilder;
 use SilverStripe\Forager\Service\IndexConfiguration;
 use SilverStripe\Forager\Service\Traits\ConfigurationAware;
 use Silverstripe\Search\Client\Client;
-use Silverstripe\Search\Client\Model\DocumentListRequest;
-use Silverstripe\Search\Client\Model\PaginationNoTotals;
-use Silverstripe\Search\Client\Model\Schema;
-use Throwable;
+use Silverstripe\Search\Client\Model\Pagination;
+use Silverstripe\Search\Client\Request\Document\DocumentListRequest;
 
 class BifrostService implements IndexingInterface
 {
@@ -102,12 +100,14 @@ class BifrostService implements IndexingInterface
             $documentsArray
         );
 
-        if (!$response) {
+        $body = json_decode((string) $response->getBody());
+
+        if (!$body) {
             return [];
         }
 
-        foreach ($response as $documentResponse) {
-            $processedIds[] = $documentResponse->getId();
+        foreach ($body as $documentResponse) {
+            $processedIds[] = $documentResponse->id;
         }
 
         // One document could have existed in multiple indexes, we only care to track it once
@@ -151,12 +151,14 @@ class BifrostService implements IndexingInterface
                 $idsToRemove
             );
 
-            if (!$response) {
+            $body = json_decode((string) $response->getBody());
+
+            if (!$body) {
                 continue;
             }
 
-            foreach ($response as $documentResponse) {
-                $processedIds[] = $documentResponse->getId();
+            foreach ($body as $documentResponse) {
+                $processedIds[] = $documentResponse->id;
             }
         }
 
@@ -173,20 +175,19 @@ class BifrostService implements IndexingInterface
         $client = $this->getClient();
         $numDeleted = 0;
 
-        $pagination = new PaginationNoTotals();
-        $pagination->setSize($batchSize);
-        $pagination->setCurrent(1);
+        $pagination = new Pagination(1, $batchSize);
 
         $request = new DocumentListRequest();
         $request->setPage($pagination);
 
-        $response = $client->documentsListPost($indexName, $request);
+        $response = $client->documentsList($indexName, $request);
+        $body = json_decode((string) $response->getBody());
 
         $idsToRemove = [];
 
         // Create the list of indexed documents to remove
-        foreach ($response->getResults() as $doc) {
-            $idsToRemove[] = $doc['id'];
+        foreach ($body->results as $doc) {
+            $idsToRemove[] = $doc->id;
         }
 
         if (!$idsToRemove) {
@@ -194,11 +195,12 @@ class BifrostService implements IndexingInterface
         }
 
         // Actually delete the documents
-        $deletedDocs = $client->documentsDelete($indexName, $idsToRemove);
+        $deleteResponse = $client->documentsDelete($indexName, $idsToRemove);
+        $deletedDocs = json_decode((string) $deleteResponse->getBody());
 
         // Keep an accurate running count of the number of documents deleted.
         foreach ($deletedDocs as $doc) {
-            $deleted = $doc?->getDeleted() ?? false;
+            $deleted = $doc->deleted ?? false;
 
             // phpcs:ignore SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed
             if ($deleted) {
@@ -231,15 +233,13 @@ class BifrostService implements IndexingInterface
     {
         $docs = [];
 
-        // This is going to return results as a stdClass
         $response = $this->getClient()->documentsGet(
             $this->getConfiguration()->environmentizeIndex($indexSuffix),
             $ids
         );
-        // Convert to associative, because this is what the builder requires
-        $response = json_decode(json_encode($response), true);
 
-        $results = $response['results'] ?? null;
+        $body = json_decode((string) $response->getBody(), true);
+        $results = $body['results'] ?? null;
 
         if (!$results) {
             return [];
@@ -265,26 +265,20 @@ class BifrostService implements IndexingInterface
      */
     public function listDocuments(string $indexSuffix, ?int $pageSize = null, int $currentPage = 1): array
     {
-        $pagination = new PaginationNoTotals();
-        $pagination->setCurrent($currentPage);
-
-        if ($pageSize) {
-            $pagination->setSize($pageSize);
-        }
+        $pagination = new Pagination($currentPage, $pageSize ?? 10);
 
         $request = new DocumentListRequest();
         $request->setPage($pagination);
 
-        // This is going to return results as a stdClass
-        $response = $this->getClient()->documentsListPost(
+        $response = $this->getClient()->documentsList(
             $this->getConfiguration()->environmentizeIndex($indexSuffix),
             $request
         );
 
+        $body = json_decode((string) $response->getBody());
         $documents = [];
 
-        foreach ($response->getResults() as $data) {
-            // Casting to array is required, because these are actually ArrayObjects, not arrays
+        foreach ($body->results as $data) {
             $document = $this->getBuilder()->fromArray((array) $data);
 
             if (!$document) {
@@ -302,26 +296,25 @@ class BifrostService implements IndexingInterface
      */
     public function getDocumentTotal(string $indexSuffix): int
     {
-        $pagination = new PaginationNoTotals();
         // We're only interested in the metadata, so the number of docs we request is actually not important
-        $pagination->setSize(1);
-        $pagination->setCurrent(1);
+        $pagination = new Pagination(1, 1);
 
         $request = new DocumentListRequest();
         $request->setPage($pagination);
 
-        $response = $this->getClient()->documentsListPost(
+        $response = $this->getClient()->documentsList(
             $this->getConfiguration()->environmentizeIndex($indexSuffix),
             $request
         );
 
-        try {
-            $total = $response->getMeta()->getPage()->getTotalResults();
-        } catch (Throwable) {
+        $body = json_decode((string) $response->getBody());
+        $total = $body->meta->page->total_results ?? null;
+
+        if ($total === null) {
             throw new IndexingServiceException('Total results not provided in meta content');
         }
 
-        return $total;
+        return (int) $total;
     }
 
     /**
@@ -342,12 +335,13 @@ class BifrostService implements IndexingInterface
             );
             // Trigger an update to Bifröst with our current configured Schema
             $response = $this->getClient()->schemaPost($indexName, $definedSchema);
+            $body = json_decode((string) $response->getBody());
 
-            if (!$response->getAcknowledged()) {
+            if (!($body->acknowledged ?? false)) {
                 continue;
             }
 
-            $schemas[$indexSuffix] = (array) $definedSchema;
+            $schemas[$indexSuffix] = $definedSchema;
         }
 
         return $schemas;
@@ -430,17 +424,18 @@ class BifrostService implements IndexingInterface
 
     /**
      * @param Field[] $fields
+     * @return array<string, string>
      */
-    private function getSchemaForFields(array $fields): Schema
+    private function getSchemaForFields(array $fields): array
     {
-        $request = new Schema();
+        $schema = [];
 
         foreach ($fields as $field) {
             $explicitFieldType = $field->getOption('type') ?? $this->config()->get('default_field_type');
-            $request[$field->getSearchFieldName()] = $explicitFieldType;
+            $schema[$field->getSearchFieldName()] = $explicitFieldType;
         }
 
-        return $request;
+        return $schema;
     }
 
     /**

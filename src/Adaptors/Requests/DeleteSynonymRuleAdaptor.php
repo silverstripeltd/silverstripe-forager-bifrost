@@ -5,8 +5,6 @@ namespace SilverStripe\ForagerBifrost\Adaptors\Requests;
 use SilverStripe\Forager\Interfaces\Requests\DeleteSynonymRuleAdaptor as DeleteSynonymRuleAdaptorInterface;
 use SilverStripe\Forager\Service\IndexConfiguration;
 use Silverstripe\Search\Client\Client;
-use Silverstripe\Search\Client\Exception\SynonymRuleDeleteNotFoundException;
-use Silverstripe\Search\Client\Exception\SynonymRuleDeleteUnprocessableEntityException;
 
 class DeleteSynonymRuleAdaptor implements DeleteSynonymRuleAdaptorInterface
 {
@@ -22,19 +20,16 @@ class DeleteSynonymRuleAdaptor implements DeleteSynonymRuleAdaptorInterface
         $this->client = $client;
     }
 
-    /**
-     * @throws SynonymRuleDeleteNotFoundException
-     * @throws SynonymRuleDeleteUnprocessableEntityException
-     */
     public function process(int|string $synonymCollectionId, int|string $synonymRuleId): bool
     {
         // Silverstripe Search simply uses the engine name as the Synonym Collection ID
         $engineName = IndexConfiguration::singleton()->environmentizeIndex($synonymCollectionId);
 
         // Should either be successful or throw an exception, which we'll let fly
-        $response = $this->client->synonymRuleDelete($synonymRuleId, $engineName);
+        $response = $this->client->synonymRuleDelete($engineName, $synonymRuleId);
+        $body = json_decode((string) $response->getBody());
 
-        return $response->getSuccess();
+        return $body->success ?? false;
     }
 
 }
