@@ -238,8 +238,7 @@ class BifrostService implements IndexingInterface
             $ids
         );
 
-        $body = json_decode((string) $response->getBody(), true);
-        $results = $body['results'] ?? null;
+        $results = json_decode((string) $response->getBody(), true);
 
         if (!$results) {
             return [];
