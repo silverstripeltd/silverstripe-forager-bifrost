@@ -8,9 +8,7 @@ use SilverStripe\Forager\Service\Query\SynonymRule as SynonymRuleQuery;
 use SilverStripe\Forager\Service\Results\SynonymRule as SynonymRuleResult;
 use SilverStripe\ForagerBifrost\Processors\SynonymRuleProcessor;
 use Silverstripe\Search\Client\Client;
-use Silverstripe\Search\Client\Exception\SynonymRulePutNotFoundException;
-use Silverstripe\Search\Client\Exception\SynonymRulePutUnprocessableEntityException;
-use Silverstripe\Search\Client\Model\SynonymRuleRequest;
+use Silverstripe\Search\Client\Request\Engine\SynonymRuleRequest;
 
 class UpdateSynonymRuleAdaptor implements PatchSynonymRuleAdaptorInterface
 {
@@ -26,10 +24,6 @@ class UpdateSynonymRuleAdaptor implements PatchSynonymRuleAdaptorInterface
         $this->client = $client;
     }
 
-    /**
-     * @throws SynonymRulePutNotFoundException
-     * @throws SynonymRulePutUnprocessableEntityException
-     */
     public function process(
         int|string $synonymCollectionId,
         int|string $synonymRuleId,
@@ -39,14 +33,14 @@ class UpdateSynonymRuleAdaptor implements PatchSynonymRuleAdaptorInterface
         $engineName = IndexConfiguration::singleton()->environmentizeIndex($synonymCollectionId);
         // Convert the query into a Silverstripe Search synonym rule string
         $synonyms = SynonymRuleProcessor::getStringFromQuery($synonymRule);
-        $request = new SynonymRuleRequest();
-        $request->setSynonyms($synonyms);
+        $request = new SynonymRuleRequest($synonyms);
 
         // Should either be successful or throw an exception, which we'll let fly
-        $response = $this->client->synonymRulePut($synonymRuleId, $engineName, $request);
+        $response = $this->client->synonymRulePut($engineName, $synonymRuleId, $request);
+        $body = json_decode((string) $response->getBody());
 
-        $synonymRuleResult = SynonymRuleResult::create($response->getId());
-        SynonymRuleProcessor::applyStringToResult($synonymRuleResult, $response->getSynonyms());
+        $synonymRuleResult = SynonymRuleResult::create($body->id);
+        SynonymRuleProcessor::applyStringToResult($synonymRuleResult, $body->synonyms);
 
         return $synonymRuleResult;
     }

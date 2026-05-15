@@ -8,8 +8,6 @@ use SilverStripe\Forager\Service\Results\SynonymRule;
 use SilverStripe\Forager\Service\Results\SynonymRules;
 use SilverStripe\ForagerBifrost\Processors\SynonymRuleProcessor;
 use Silverstripe\Search\Client\Client;
-use Silverstripe\Search\Client\Exception\SynonymRulesGetNotFoundException;
-use Silverstripe\Search\Client\Exception\SynonymRulesGetUnprocessableEntityException;
 
 class GetSynonymRulesAdaptor implements GetSynonymRulesAdaptorInterface
 {
@@ -25,10 +23,6 @@ class GetSynonymRulesAdaptor implements GetSynonymRulesAdaptorInterface
         $this->client = $client;
     }
 
-    /**
-     * @throws SynonymRulesGetNotFoundException
-     * @throws SynonymRulesGetUnprocessableEntityException
-     */
     public function process(int|string $synonymCollectionId): SynonymRules
     {
         // Silverstripe Search simply uses the engine name as the Synonym Collection ID
@@ -36,16 +30,17 @@ class GetSynonymRulesAdaptor implements GetSynonymRulesAdaptorInterface
 
         // Should either be successful or throw an exception, which we'll let fly
         $response = $this->client->synonymRulesGet($engineName);
+        $body = json_decode((string) $response->getBody());
         $synonymRules = SynonymRules::create();
 
         // Covers for either null being returned or an empty array
-        if (!$response) {
+        if (!$body) {
             return $synonymRules;
         }
 
-        foreach ($response as $result) {
-            $synonymRule = SynonymRule::create($result->getId());
-            SynonymRuleProcessor::applyStringToResult($synonymRule, $result->getSynonyms());
+        foreach ($body as $result) {
+            $synonymRule = SynonymRule::create($result->id);
+            SynonymRuleProcessor::applyStringToResult($synonymRule, $result->synonyms);
 
             $synonymRules->add($synonymRule);
         }

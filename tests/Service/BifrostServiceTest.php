@@ -483,40 +483,30 @@ class BifrostServiceTest extends SapphireTest
         ];
         // Valid body content, containing the metadata for a couple of the DataObjects that are in our fixture
         $body = json_encode([
-            'meta' => [
-                'page' => [
-                    'current' => 1,
-                    'total_pages' => 1,
-                    'total_results' => 2,
-                    'size' => 100,
-                ],
+            [
+                'id' => $idOne,
+                'record_id' => $fakeOne->ID,
+                'record_base_class' => DataObjectFake::class,
+                'source_class' => DataObjectFake::class,
+                'title' => 'Dataobject one',
+                'page_content' => '',
             ],
-            'results' => [
-                [
-                    'id' => $idOne,
-                    'record_id' => $fakeOne->ID,
-                    'record_base_class' => DataObjectFake::class,
-                    'source_class' => DataObjectFake::class,
-                    'title' => 'Dataobject one',
-                    'page_content' => '',
-                ],
-                // Doubling this one up to check that we only get one
-                [
-                    'id' => $idTwo,
-                    'record_id' => $fakeTwo->ID,
-                    'record_base_class' => DataObjectFake::class,
-                    'source_class' => DataObjectFake::class,
-                    'title' => 'Dataobject two',
-                    'page_content' => '',
-                ],
-                [
-                    'id' => $idTwo,
-                    'record_id' => $fakeTwo->ID,
-                    'record_base_class' => DataObjectFake::class,
-                    'source_class' => DataObjectFake::class,
-                    'title' => 'Dataobject two',
-                    'page_content' => '',
-                ],
+            // Doubling this one up to check that we only get one
+            [
+                'id' => $idTwo,
+                'record_id' => $fakeTwo->ID,
+                'record_base_class' => DataObjectFake::class,
+                'source_class' => DataObjectFake::class,
+                'title' => 'Dataobject two',
+                'page_content' => '',
+            ],
+            [
+                'id' => $idTwo,
+                'record_id' => $fakeTwo->ID,
+                'record_base_class' => DataObjectFake::class,
+                'source_class' => DataObjectFake::class,
+                'title' => 'Dataobject two',
+                'page_content' => '',
             ],
         ]);
 
@@ -558,17 +548,7 @@ class BifrostServiceTest extends SapphireTest
             'Content-Type' => 'application/json;charset=utf-8',
         ];
         // Valid body content with empty results
-        $body = json_encode([
-            'meta' => [
-                'page' => [
-                    'current' => 1,
-                    'total_pages' => 1,
-                    'total_results' => 0,
-                    'size' => 100,
-                ],
-            ],
-            'results' => [],
-        ]);
+        $body = json_encode([]);
 
         // Append this mock response to our stack
         $this->mock->append(new Response(200, $headers, $body));
@@ -593,32 +573,22 @@ class BifrostServiceTest extends SapphireTest
         ];
         // Valid body content, containing the metadata for a couple of the DataObjects that are in our fixture
         $body = json_encode([
-            'meta' => [
-                'page' => [
-                    'current' => 1,
-                    'total_pages' => 1,
-                    'total_results' => 2,
-                    'size' => 100,
-                ],
+            // Doubling this one up to check that we only get one
+            [
+                'id' => $id,
+                'record_id' => $fake->ID,
+                'record_base_class' => DataObjectFake::class,
+                'source_class' => DataObjectFake::class,
+                'title' => 'Dataobject one',
+                'page_content' => '',
             ],
-            'results' => [
-                // Doubling this one up to check that we only get one
-                [
-                    'id' => $id,
-                    'record_id' => $fake->ID,
-                    'record_base_class' => DataObjectFake::class,
-                    'source_class' => DataObjectFake::class,
-                    'title' => 'Dataobject one',
-                    'page_content' => '',
-                ],
-                [
-                    'id' => $id,
-                    'record_id' => $fake->ID,
-                    'record_base_class' => DataObjectFake::class,
-                    'source_class' => DataObjectFake::class,
-                    'title' => 'Dataobject one',
-                    'page_content' => '',
-                ],
+            [
+                'id' => $id,
+                'record_id' => $fake->ID,
+                'record_base_class' => DataObjectFake::class,
+                'source_class' => DataObjectFake::class,
+                'title' => 'Dataobject one',
+                'page_content' => '',
             ],
         ]);
 
@@ -647,17 +617,7 @@ class BifrostServiceTest extends SapphireTest
             'Content-Type' => 'application/json;charset=utf-8',
         ];
         // Valid body content with empty results
-        $body = json_encode([
-            'meta' => [
-                'page' => [
-                    'current' => 1,
-                    'total_pages' => 1,
-                    'total_results' => 0,
-                    'size' => 100,
-                ],
-            ],
-            'results' => [],
-        ]);
+        $body = json_encode([]);
 
         // Append this mock response to our stack
         $this->mock->append(new Response(200, $headers, $body));
