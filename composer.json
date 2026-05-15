@@ -21,7 +21,7 @@
         "silverstripe/framework": "^6",
         "silverstripe/reports": "^6",
         "silverstripe/silverstripe-forager": "^2.0.3",
-        "silverstripe/silverstripe-search-client-php": "dev-feature/roll-your-own as 0.0.8-alpha",
+        "silverstripe/silverstripe-search-client-php": "^1",
         "guzzlehttp/guzzle": "^7.9",
         "php-http/client-common": "^2.7",
         "php-http/discovery": "^1.20"
