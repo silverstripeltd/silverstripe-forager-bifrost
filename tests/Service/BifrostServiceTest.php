@@ -11,13 +11,16 @@ use Page;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Log\LoggerInterface;
 use ReflectionMethod;
+use RuntimeException;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forager\DataObject\DataObjectDocument;
 use SilverStripe\Forager\Extensions\SearchServiceExtension;
+use SilverStripe\Forager\Models\IndexingFailure;
 use SilverStripe\Forager\Service\DocumentBuilder;
 use SilverStripe\Forager\Service\IndexConfiguration;
 use SilverStripe\Forager\Service\IndexData;
+use SilverStripe\Forager\Service\IndexingFailureService;
 use SilverStripe\ForagerBifrost\Service\BifrostService;
 use SilverStripe\ForagerBifrost\Service\ClientFactory;
 use SilverStripe\ForagerBifrost\Tests\Fake\DataObjectFake;
@@ -27,6 +30,7 @@ use SilverStripe\ForagerBifrost\Tests\Fake\ImageFake;
 use SilverStripe\ForagerBifrost\Tests\Fake\IndexConfigurationFake;
 use SilverStripe\ForagerBifrost\Tests\Fake\TagFake;
 use SilverStripe\Security\Member;
+use Throwable;
 
 class BifrostServiceTest extends SapphireTest
 {
@@ -987,9 +991,111 @@ class BifrostServiceTest extends SapphireTest
         $this->assertEquals(0, $this->mock->count());
     }
 
+    public function testAddDocumentsRecordsFailureWithStackTraceOnException(): void
+    {
+        $documents = [
+            DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'one')),
+            DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'three')),
+        ];
+
+        // A transport-level failure: the mock throws instead of returning a response.
+        $this->mock->append(new RuntimeException('Simulated transport failure'));
+
+        $threw = false;
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use ($documents, &$threw): void {
+                try {
+                    $this->searchService->addDocuments('content', $documents);
+                } catch (Throwable) {
+                    // Recording must not swallow the error: it is rethrown so the job still fails.
+                    $threw = true;
+                }
+            }
+        );
+
+        $this->assertTrue($threw, 'addDocuments should rethrow the transport exception');
+
+        $failures = IndexingFailure::get();
+        $this->assertCount(count($documents), $failures, 'Every submitted document should be recorded');
+
+        foreach ($failures as $failure) {
+            $this->assertSame(IndexingFailure::REASON_EXCEPTION, $failure->ReasonType);
+            $this->assertNotEmpty($failure->StackTrace, 'A stack trace should be captured for exceptions');
+            $this->assertStringContainsString('Simulated transport failure', $failure->StackTrace);
+        }
+    }
+
+    public function testAddDocumentsRecordsContentError(): void
+    {
+        $document = DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'one'));
+
+        // A 200 batch response carrying a per-document error still marks that document as failed.
+        $body = json_encode([
+            [
+                'id' => $document->getIdentifier(),
+                'error' => 'Field mapping rejected the document',
+            ],
+        ]);
+        $this->mock->append(new Response(200, ['Content-Type' => 'application/json;charset=utf-8'], $body));
+
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use ($document): void {
+                $this->searchService->addDocuments('content', [$document]);
+            }
+        );
+
+        $failure = IndexingFailure::get()->first();
+        $this->assertNotNull($failure);
+        $this->assertSame(IndexingFailure::REASON_CONTENT_ERROR, $failure->ReasonType);
+        $this->assertStringContainsString('Field mapping rejected', $failure->LastMessage);
+        // Content errors are engine-reported, not exceptions, so no trace is captured.
+        $this->assertEmpty($failure->StackTrace);
+    }
+
+    public function testAddDocumentsResolvesPriorFailureOnSuccess(): void
+    {
+        $document = DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'one'));
+
+        // Seed a prior open failure for this document.
+        IndexingFailureService::singleton()->recordForDocument(
+            $document,
+            'content',
+            IndexingFailure::REASON_UNACKNOWLEDGED,
+            'earlier miss'
+        );
+        $this->assertSame(IndexingFailure::STATUS_OPEN, IndexingFailure::get()->first()->Status);
+
+        // The engine now acknowledges the document (echoing its identifier back).
+        $body = json_encode([
+            [
+                'id' => $document->getIdentifier(),
+                'errors' => [],
+            ],
+        ]);
+        $this->mock->append(new Response(200, ['Content-Type' => 'application/json;charset=utf-8'], $body));
+
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use ($document): void {
+                $this->searchService->addDocuments('content', [$document]);
+            }
+        );
+
+        $this->assertSame(
+            IndexingFailure::STATUS_RESOLVED,
+            IndexingFailure::get()->first()->Status,
+            'A prior failure should self-heal once the engine acknowledges the document'
+        );
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Failure rows are real (non-TestOnly) records shared across tests; start each test clean.
+        IndexingFailure::get()->removeAll();
 
         // The field configuration that we want to use for our classes and tests
         IndexConfiguration::config()->set(

@@ -15,13 +15,16 @@ use SilverStripe\Forager\Exception\IndexConfigurationException;
 use SilverStripe\Forager\Exception\IndexingServiceException;
 use SilverStripe\Forager\Interfaces\DocumentInterface;
 use SilverStripe\Forager\Interfaces\IndexingInterface;
+use SilverStripe\Forager\Models\IndexingFailure;
 use SilverStripe\Forager\Schema\Field;
 use SilverStripe\Forager\Service\DocumentBuilder;
 use SilverStripe\Forager\Service\IndexConfiguration;
+use SilverStripe\Forager\Service\IndexingFailureService;
 use SilverStripe\Forager\Service\Traits\ConfigurationAware;
 use Silverstripe\Search\Client\Client;
 use Silverstripe\Search\Client\Model\Pagination;
 use Silverstripe\Search\Client\Request\Document\DocumentListRequest;
+use Throwable;
 
 class BifrostService implements IndexingInterface
 {
@@ -95,15 +98,57 @@ class BifrostService implements IndexingInterface
             return [];
         }
 
-        $response = $this->getClient()->documentsPost(
-            $this->getConfiguration()->environmentizeIndex($indexSuffix),
-            $documentsArray
-        );
+        // Reconcile what the engine acknowledges against what we submitted, so documents the engine
+        // silently drops or rejects are recorded rather than lost. The content map keys each document
+        // under the ID field with the value of DocumentInterface::getIdentifier(), and the engine echoes
+        // that same value back as $documentResponse->id — so identifiers line up on both sides.
+        $idField = $this->getConfiguration()->getIDField();
+        $sentIds = array_column($documentsArray, $idField);
+        $documentsByIdentifier = [];
+
+        foreach ($documents as $document) {
+            $documentsByIdentifier[$document->getIdentifier()] = $document;
+        }
+
+        $failureService = IndexingFailureService::singleton();
+        $contentErrorIds = [];
+
+        try {
+            $response = $this->getClient()->documentsPost(
+                $this->getConfiguration()->environmentizeIndex($indexSuffix),
+                $documentsArray
+            );
+        } catch (Throwable $e) {
+            // A whole-batch transport/exception failure: record every document we tried to send, then
+            // rethrow so the job still surfaces the error (recording never swallows it).
+            $this->recordFailures($failureService, $documentsByIdentifier, $sentIds, $indexSuffix, [
+                'reason' => IndexingFailure::REASON_EXCEPTION,
+                'message' => $e->getMessage(),
+                'trace' => sprintf('%s: %s' . PHP_EOL . '%s', $e::class, $e->getMessage(), $e->getTraceAsString()),
+            ]);
+
+            throw $e;
+        }
+
+        $status = $response->getStatusCode();
+
+        if ($status >= 400) {
+            // search-client-php does not throw on error responses, so without this a non-2xx status
+            // would be parsed as an empty body and pass silently. Record every submitted document.
+            $this->recordFailures($failureService, $documentsByIdentifier, $sentIds, $indexSuffix, [
+                'reason' => IndexingFailure::REASON_EXCEPTION,
+                'message' => sprintf('Engine returned HTTP %d: %s', $status, trim((string) $response->getBody())),
+            ]);
+
+            return [];
+        }
 
         $body = json_decode((string) $response->getBody());
 
+        // A 2xx with an empty/unparseable body means nothing was acknowledged; fall through so the
+        // reconciliation loop records every submitted document as unacknowledged rather than returning.
         if (!$body) {
-            return [];
+            $body = [];
         }
 
         foreach ($body as $documentResponse) {
@@ -120,6 +165,12 @@ class BifrostService implements IndexingInterface
                     implode('; ', (array) $errors)
                 ));
 
+                $contentErrorIds[] = $documentResponse->id;
+                $this->recordFailures($failureService, $documentsByIdentifier, [$documentResponse->id], $indexSuffix, [
+                    'reason' => IndexingFailure::REASON_CONTENT_ERROR,
+                    'message' => implode('; ', (array) $errors),
+                ]);
+
                 continue;
             }
 
@@ -127,7 +178,61 @@ class BifrostService implements IndexingInterface
         }
 
         // One document could have existed in multiple indexes, we only care to track it once
-        return array_unique($processedIds);
+        $processedIds = array_unique($processedIds);
+
+        // Acknowledged documents self-heal any prior open failure; anything we sent that was neither
+        // acknowledged nor explicitly errored has silently vanished, so record it as unacknowledged.
+        foreach ($sentIds as $sentId) {
+            $document = $documentsByIdentifier[$sentId] ?? null;
+
+            if (!$document) {
+                continue;
+            }
+
+            if (in_array($sentId, $processedIds, true)) {
+                $failureService->resolveForDocument($document, $indexSuffix);
+            } elseif (!in_array($sentId, $contentErrorIds, true)) {
+                $failureService->recordForDocument(
+                    $document,
+                    $indexSuffix,
+                    IndexingFailure::REASON_UNACKNOWLEDGED,
+                    'Document was submitted but not acknowledged by the engine'
+                );
+            }
+        }
+
+        return $processedIds;
+    }
+
+    /**
+     * Record a failure for each of the given identifiers that maps to a submitted document.
+     *
+     * @param array<string, DocumentInterface> $documentsByIdentifier
+     * @param array<int, string> $identifiers
+     * @param array{reason: string, message: string, trace?: string|null} $failure
+     */
+    private function recordFailures(
+        IndexingFailureService $failureService,
+        array $documentsByIdentifier,
+        array $identifiers,
+        string $indexSuffix,
+        array $failure
+    ): void {
+        foreach ($identifiers as $identifier) {
+            $document = $documentsByIdentifier[$identifier] ?? null;
+
+            if (!$document) {
+                continue;
+            }
+
+            $failureService->recordForDocument(
+                $document,
+                $indexSuffix,
+                $failure['reason'],
+                $failure['message'],
+                $failure['trace'] ?? null
+            );
+        }
     }
 
     public function removeDocument(string $indexSuffix, DocumentInterface $document): ?string
