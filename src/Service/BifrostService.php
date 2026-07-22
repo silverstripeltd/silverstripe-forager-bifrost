@@ -6,9 +6,7 @@ use Exception;
 use InvalidArgumentException;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
-use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Configurable;
-use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forager\Exception\IndexConfigurationException;
@@ -45,7 +43,7 @@ class BifrostService implements IndexingInterface
 
     public function getDocumentationURL(): ?string
     {
-        return Controller::join_links(Environment::getEnv('BIFROST_ENDPOINT'), '/resources/guides/index.html');
+        return 'https://docs.search.silverstripe.cloud';
     }
 
     private const string DEFAULT_FIELD_TYPE = 'text';
