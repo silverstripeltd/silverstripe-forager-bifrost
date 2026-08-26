@@ -264,11 +264,52 @@ class BifrostService implements IndexingInterface
             $documentMap[$indexSuffix][] = $document->getIdentifier();
         }
 
+        $failureService = IndexingFailureService::singleton();
+        $documentsByIdentifier = [];
+
+        foreach ($documents as $document) {
+            $documentsByIdentifier[$document->getIdentifier()] = $document;
+        }
+
         foreach ($documentMap as $indexSuffix => $idsToRemove) {
-            $response = $this->getClient()->documentsDelete(
-                $this->getConfiguration()->environmentizeIndex($indexSuffix),
-                $idsToRemove
-            );
+            try {
+                $response = $this->getClient()->documentsDelete(
+                    $this->getConfiguration()->environmentizeIndex($indexSuffix),
+                    $idsToRemove
+                );
+            } catch (Throwable $e) {
+                // A document left in the index after its record is gone is hard to spot and hard to
+                // re-trigger a job for, so record the batch before rethrowing.
+                $this->recordFailures($failureService, $documentsByIdentifier, $idsToRemove, $indexSuffix, [
+                    'reason' => IndexingFailure::REASON_REMOVE_EXCEPTION,
+                    'message' => $e->getMessage(),
+                    'trace' => sprintf('%s: %s' . PHP_EOL . '%s', $e::class, $e->getMessage(), $e->getTraceAsString()),
+                ]);
+
+                throw $e;
+            }
+
+            $status = $response->getStatusCode();
+
+            if ($status >= 400) {
+                // search-client-php does not throw on error responses, and a non-2xx body does not
+                // decode into per-document results, so record the batch rather than falling through.
+                $message = sprintf('Engine returned HTTP %d: %s', $status, trim((string) $response->getBody()));
+
+                Injector::inst()->get(LoggerInterface::class)->error(sprintf(
+                    'Failed to remove %d document(s) from index "%s". %s',
+                    count($idsToRemove),
+                    $indexSuffix,
+                    $message
+                ));
+
+                $this->recordFailures($failureService, $documentsByIdentifier, $idsToRemove, $indexSuffix, [
+                    'reason' => IndexingFailure::REASON_REMOVE_EXCEPTION,
+                    'message' => $message,
+                ]);
+
+                continue;
+            }
 
             $body = json_decode((string) $response->getBody());
 
@@ -278,6 +319,15 @@ class BifrostService implements IndexingInterface
 
             foreach ($body as $documentResponse) {
                 $processedIds[] = $documentResponse->id;
+
+                $document = $documentsByIdentifier[$documentResponse->id] ?? null;
+
+                if (!$document) {
+                    continue;
+                }
+
+                // A confirmed removal clears any failure recorded against an earlier attempt.
+                $failureService->resolveForDocument($document, $indexSuffix);
             }
         }
 

@@ -1090,6 +1090,82 @@ class BifrostServiceTest extends SapphireTest
         );
     }
 
+    public function testRemoveDocumentsRecordsFailureOnErrorResponse(): void
+    {
+        $documents = [
+            DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'one')),
+            DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'three')),
+        ];
+
+        // search-client-php does not throw on an error response, so the status is what marks the batch failed.
+        $this->mock->append(new Response(500, [], 'Internal server error'));
+
+        $resultIds = $this->searchService->removeDocuments('content', $documents);
+
+        $this->assertEmpty($resultIds, 'Nothing was removed, so nothing should be reported as processed');
+
+        $failures = IndexingFailure::get();
+        $this->assertCount(count($documents), $failures, 'Every document in the batch should be recorded');
+
+        foreach ($failures as $failure) {
+            $this->assertSame(IndexingFailure::REASON_REMOVE_EXCEPTION, $failure->ReasonType);
+            $this->assertStringContainsString('HTTP 500', $failure->LastMessage);
+        }
+    }
+
+    public function testRemoveDocumentsRecordsFailureWithStackTraceOnException(): void
+    {
+        $documents = [
+            DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'one')),
+        ];
+
+        $this->mock->append(new RuntimeException('Simulated transport failure'));
+
+        $threw = false;
+
+        try {
+            $this->searchService->removeDocuments('content', $documents);
+        } catch (Throwable) {
+            // Recording must not swallow the error: it is rethrown so the job still fails.
+            $threw = true;
+        }
+
+        $this->assertTrue($threw, 'removeDocuments should rethrow the transport exception');
+
+        $failure = IndexingFailure::get()->first();
+        $this->assertNotNull($failure);
+        $this->assertSame(IndexingFailure::REASON_REMOVE_EXCEPTION, $failure->ReasonType);
+        $this->assertStringContainsString('Simulated transport failure', $failure->StackTrace);
+    }
+
+    public function testRemoveDocumentsResolvesPriorFailureOnSuccess(): void
+    {
+        $document = DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'one'));
+
+        IndexingFailureService::singleton()->recordForDocument(
+            $document,
+            'content',
+            IndexingFailure::REASON_REMOVE_EXCEPTION,
+            'earlier removal failure'
+        );
+
+        $body = json_encode([
+            [
+                'id' => $document->getIdentifier(),
+                'deleted' => true,
+            ],
+        ]);
+        $this->mock->append(new Response(200, ['Content-Type' => 'application/json;charset=utf-8'], $body));
+
+        $this->searchService->removeDocuments('content', [$document]);
+
+        $this->assertSame(
+            IndexingFailure::STATUS_RESOLVED,
+            IndexingFailure::get()->first()->Status,
+            'A confirmed removal should clear the failure recorded against the earlier attempt'
+        );
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
