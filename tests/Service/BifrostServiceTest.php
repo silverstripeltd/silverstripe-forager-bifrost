@@ -682,6 +682,41 @@ class BifrostServiceTest extends SapphireTest
         $this->assertEquals(0, $this->mock->count());
     }
 
+    public function testAddDocumentsOmitsRejectedDocuments(): void
+    {
+        $documentOne = $this->objFromFixture(DataObjectFake::class, 'one');
+        $documentThree = $this->objFromFixture(DataObjectFake::class, 'three');
+
+        $documents = [];
+        $documents[] = DataObjectDocument::create($documentOne);
+        $documents[] = DataObjectDocument::create($documentThree);
+
+        // The engine responds 200 for the batch and reports each rejection against its own document.
+        $body = json_encode([
+            [
+                'id' => 'doc-accepted',
+                'errors' => [],
+            ],
+            [
+                'id' => 'doc-rejected',
+                'errors' => ['Field mapping rejected the document'],
+            ],
+        ]);
+
+        $this->mock->append(new Response(200, ['Content-Type' => 'application/json;charset=utf-8'], $body));
+
+        $resultIds = [];
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use (&$resultIds, $documents): void {
+                $resultIds = $this->searchService->addDocuments('content', $documents);
+            }
+        );
+
+        $this->assertEqualsCanonicalizing(['doc-accepted'], $resultIds);
+        $this->assertEquals(0, $this->mock->count());
+    }
+
     public function testAddDocumentsEmpty(): void
     {
         // Adding an empty array of documents, we would expect no API calls to be made
