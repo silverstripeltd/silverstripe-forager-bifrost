@@ -1030,11 +1030,12 @@ class BifrostServiceTest extends SapphireTest
     {
         $document = DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'one'));
 
-        // A 200 batch response carrying a per-document error still marks that document as failed.
+        // A 200 batch response carrying a per-document error still marks that document as failed. The
+        // engine reports these as an "errors" array per document, mirroring the Elasticsearch bulk items.
         $body = json_encode([
             [
                 'id' => $document->getIdentifier(),
-                'error' => 'Field mapping rejected the document',
+                'errors' => ['Field mapping rejected the document'],
             ],
         ]);
         $this->mock->append(new Response(200, ['Content-Type' => 'application/json;charset=utf-8'], $body));
