@@ -6,8 +6,10 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use Monolog\Logger;
 use Page;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\Log\LoggerInterface;
 use ReflectionMethod;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
@@ -704,6 +706,16 @@ class BifrostServiceTest extends SapphireTest
         ]);
 
         $this->mock->append(new Response(200, ['Content-Type' => 'application/json;charset=utf-8'], $body));
+
+        $mockLogger = $this->getMockBuilder(Logger::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['error'])
+            ->getMock();
+
+        Injector::inst()->registerService($mockLogger, LoggerInterface::class);
+        $mockLogger->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('doc-rejected'));
 
         $resultIds = [];
         $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
