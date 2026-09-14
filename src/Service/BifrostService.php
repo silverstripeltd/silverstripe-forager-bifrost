@@ -107,6 +107,22 @@ class BifrostService implements IndexingInterface
         }
 
         foreach ($body as $documentResponse) {
+            // The engine responds 200 for the batch whether or not individual documents were accepted,
+            // reporting each rejection in that document's "errors". Returning a rejected identifier as
+            // processed tells the caller the document is in the index when it is not.
+            $errors = $documentResponse->errors ?? [];
+
+            if ($errors) {
+                Injector::inst()->get(LoggerInterface::class)->error(sprintf(
+                    'Document "%s" was rejected by index "%s": %s',
+                    $documentResponse->id,
+                    $indexSuffix,
+                    implode('; ', (array) $errors)
+                ));
+
+                continue;
+            }
+
             $processedIds[] = $documentResponse->id;
         }
 

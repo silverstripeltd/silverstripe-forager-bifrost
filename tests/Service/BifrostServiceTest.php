@@ -6,8 +6,10 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use Monolog\Logger;
 use Page;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\Log\LoggerInterface;
 use ReflectionMethod;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
@@ -679,6 +681,51 @@ class BifrostServiceTest extends SapphireTest
         $this->assertEqualsCanonicalizing($expectedIds, $resultIds);
         // And make sure nothing is left in our Response Stack. This would indicate that every Request we expect to make
         // has been made
+        $this->assertEquals(0, $this->mock->count());
+    }
+
+    public function testAddDocumentsOmitsRejectedDocuments(): void
+    {
+        $documentOne = $this->objFromFixture(DataObjectFake::class, 'one');
+        $documentThree = $this->objFromFixture(DataObjectFake::class, 'three');
+
+        $documents = [];
+        $documents[] = DataObjectDocument::create($documentOne);
+        $documents[] = DataObjectDocument::create($documentThree);
+
+        // The engine responds 200 for the batch and reports each rejection against its own document.
+        $body = json_encode([
+            [
+                'id' => 'doc-accepted',
+                'errors' => [],
+            ],
+            [
+                'id' => 'doc-rejected',
+                'errors' => ['Field mapping rejected the document'],
+            ],
+        ]);
+
+        $this->mock->append(new Response(200, ['Content-Type' => 'application/json;charset=utf-8'], $body));
+
+        $mockLogger = $this->getMockBuilder(Logger::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['error'])
+            ->getMock();
+
+        Injector::inst()->registerService($mockLogger, LoggerInterface::class);
+        $mockLogger->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('doc-rejected'));
+
+        $resultIds = [];
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use (&$resultIds, $documents): void {
+                $resultIds = $this->searchService->addDocuments('content', $documents);
+            }
+        );
+
+        $this->assertEqualsCanonicalizing(['doc-accepted'], $resultIds);
         $this->assertEquals(0, $this->mock->count());
     }
 
