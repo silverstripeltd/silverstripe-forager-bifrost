@@ -89,8 +89,41 @@ class BifrostService implements IndexingInterface
      */
     public function addDocuments(string $indexSuffix, array $documents): array
     {
-        $documentsArray = $this->getContentMapForDocuments($indexSuffix, $documents);
         $processedIds = [];
+        $documentsByIdentifier = [];
+
+        foreach ($documents as $document) {
+            // getContentMapForDocuments() rejects anything that is not a DocumentInterface; leave that
+            // check to it rather than failing here on getIdentifier().
+            if (!$document instanceof DocumentInterface) {
+                continue;
+            }
+
+            $documentsByIdentifier[$document->getIdentifier()] = $document;
+        }
+
+        $failureService = IndexingFailureService::singleton();
+        $contentErrorIds = [];
+
+        try {
+            $documentsArray = $this->getContentMapForDocuments($indexSuffix, $documents);
+        } catch (Throwable $e) {
+            // Building the batch failed before anything was sent. Record every document, then rethrow:
+            // without this the job dies with the failure visible only in its stack trace.
+            $this->recordFailures(
+                $failureService,
+                $documentsByIdentifier,
+                array_keys($documentsByIdentifier),
+                $indexSuffix,
+                [
+                    'reason' => IndexingFailure::REASON_EXCEPTION,
+                    'message' => $e->getMessage(),
+                    'trace' => sprintf('%s: %s' . PHP_EOL . '%s', $e::class, $e->getMessage(), $e->getTraceAsString()),
+                ]
+            );
+
+            throw $e;
+        }
 
         if (!$documentsArray) {
             return [];
@@ -102,14 +135,6 @@ class BifrostService implements IndexingInterface
         // that same value back as $documentResponse->id — so identifiers line up on both sides.
         $idField = $this->getConfiguration()->getIDField();
         $sentIds = array_column($documentsArray, $idField);
-        $documentsByIdentifier = [];
-
-        foreach ($documents as $document) {
-            $documentsByIdentifier[$document->getIdentifier()] = $document;
-        }
-
-        $failureService = IndexingFailureService::singleton();
-        $contentErrorIds = [];
 
         try {
             $response = $this->getClient()->documentsPost(
@@ -318,6 +343,23 @@ class BifrostService implements IndexingInterface
             }
 
             foreach ($body as $documentResponse) {
+                // The engine reports the outcome per document inside a 200 for the batch: "deleted" is
+                // false when Elasticsearch neither removed the document nor found it already absent.
+                if (!($documentResponse->deleted ?? false)) {
+                    $this->recordFailures(
+                        $failureService,
+                        $documentsByIdentifier,
+                        [$documentResponse->id],
+                        $indexSuffix,
+                        [
+                            'reason' => IndexingFailure::REASON_REMOVE_EXCEPTION,
+                            'message' => 'Engine did not confirm removal of the document',
+                        ]
+                    );
+
+                    continue;
+                }
+
                 $processedIds[] = $documentResponse->id;
 
                 $document = $documentsByIdentifier[$documentResponse->id] ?? null;

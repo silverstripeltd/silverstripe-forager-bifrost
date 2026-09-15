@@ -1167,6 +1167,189 @@ class BifrostServiceTest extends SapphireTest
         );
     }
 
+    public function testRemoveDocumentsRecordsUnconfirmedRemoval(): void
+    {
+        $removed = DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'one'));
+        $kept = DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'three'));
+
+        // The engine responds 200 for the batch and reports the outcome per document: "deleted" is false
+        // when the document was neither removed nor already absent.
+        $body = json_encode([
+            [
+                'id' => $removed->getIdentifier(),
+                'deleted' => true,
+            ],
+            [
+                'id' => $kept->getIdentifier(),
+                'deleted' => false,
+            ],
+        ]);
+        $this->mock->append(new Response(200, ['Content-Type' => 'application/json;charset=utf-8'], $body));
+
+        $resultIds = $this->searchService->removeDocuments('content', [$removed, $kept]);
+
+        $this->assertEqualsCanonicalizing(
+            [$removed->getIdentifier()],
+            $resultIds,
+            'Only a confirmed removal should be reported as processed'
+        );
+
+        $failures = IndexingFailure::get();
+        $this->assertCount(1, $failures, 'The unconfirmed removal should be recorded');
+
+        $failure = $failures->first();
+        $this->assertSame($kept->getIdentifier(), $failure->DocumentIdentifier);
+        $this->assertSame(IndexingFailure::REASON_REMOVE_EXCEPTION, $failure->ReasonType);
+        $this->assertSame(IndexingFailure::STATUS_OPEN, $failure->Status);
+    }
+
+    public function testRemoveDocumentsKeepsPriorFailureOpenWhenRemovalUnconfirmed(): void
+    {
+        $document = DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'one'));
+
+        IndexingFailureService::singleton()->recordForDocument(
+            $document,
+            'content',
+            IndexingFailure::REASON_REMOVE_EXCEPTION,
+            'earlier removal failure'
+        );
+
+        $body = json_encode([
+            [
+                'id' => $document->getIdentifier(),
+                'deleted' => false,
+            ],
+        ]);
+        $this->mock->append(new Response(200, ['Content-Type' => 'application/json;charset=utf-8'], $body));
+
+        $this->searchService->removeDocuments('content', [$document]);
+
+        $this->assertSame(
+            IndexingFailure::STATUS_OPEN,
+            IndexingFailure::get()->first()->Status,
+            'An unconfirmed removal should leave the earlier failure open'
+        );
+    }
+
+    public function testAddDocumentsRecordsFailureWhenDocumentBuildingThrows(): void
+    {
+        $dataObject = $this->objFromFixture(DataObjectFake::class, 'one');
+
+        // An error while building the document is not an IndexConfigurationException, so it escapes
+        // getContentMapForDocuments() and would otherwise reach the queue with nothing recorded.
+        $document = $this->getMockBuilder(DataObjectDocument::class)
+            ->setConstructorArgs([$dataObject])
+            ->onlyMethods(['toArray'])
+            ->getMock();
+        // The mock is built outside the Injector, so its configuration dependency is not populated.
+        $document->setConfiguration($this->searchService->getConfiguration());
+        $document->method('toArray')->willThrowException(new RuntimeException('Broken field getter'));
+
+        $threw = false;
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use ($document, &$threw): void {
+                try {
+                    $this->searchService->addDocuments('content', [$document]);
+                } catch (Throwable) {
+                    // Recording must not swallow the error: it is rethrown so the job still fails.
+                    $threw = true;
+                }
+            }
+        );
+
+        $this->assertTrue($threw, 'addDocuments should rethrow the document building exception');
+
+        $failure = IndexingFailure::get()->first();
+        $this->assertNotNull($failure, 'The document should be recorded before the exception propagates');
+        $this->assertSame(IndexingFailure::REASON_EXCEPTION, $failure->ReasonType);
+        $this->assertStringContainsString('Broken field getter', $failure->StackTrace);
+        $this->assertEquals(0, $this->mock->count(), 'Nothing should have been sent to the engine');
+    }
+
+    public function testAddDocumentsRecordsFailureOnErrorResponse(): void
+    {
+        $documents = [
+            DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'one')),
+            DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'three')),
+        ];
+
+        // search-client-php does not throw on an error response, so the status is what marks the batch failed.
+        $this->mock->append(new Response(500, [], 'Internal server error'));
+
+        $resultIds = [];
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use ($documents, &$resultIds): void {
+                $resultIds = $this->searchService->addDocuments('content', $documents);
+            }
+        );
+
+        $this->assertEmpty($resultIds);
+
+        $failures = IndexingFailure::get();
+        $this->assertCount(count($documents), $failures);
+
+        foreach ($failures as $failure) {
+            $this->assertSame(IndexingFailure::REASON_EXCEPTION, $failure->ReasonType);
+            $this->assertStringContainsString('HTTP 500', $failure->LastMessage);
+        }
+    }
+
+    public function testAddDocumentsRecordsUnacknowledgedDocuments(): void
+    {
+        $acknowledged = DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'one'));
+        $ignored = DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'three'));
+
+        // The engine echoes back only one of the two documents it was sent.
+        $body = json_encode([
+            [
+                'id' => $acknowledged->getIdentifier(),
+                'errors' => [],
+            ],
+        ]);
+        $this->mock->append(new Response(200, ['Content-Type' => 'application/json;charset=utf-8'], $body));
+
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use ($acknowledged, $ignored): void {
+                $this->searchService->addDocuments('content', [$acknowledged, $ignored]);
+            }
+        );
+
+        $failures = IndexingFailure::get();
+        $this->assertCount(1, $failures);
+
+        $failure = $failures->first();
+        $this->assertSame($ignored->getIdentifier(), $failure->DocumentIdentifier);
+        $this->assertSame(IndexingFailure::REASON_UNACKNOWLEDGED, $failure->ReasonType);
+    }
+
+    public function testAddDocumentsRecordsEveryDocumentWhenBodyIsEmpty(): void
+    {
+        $documents = [
+            DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'one')),
+            DataObjectDocument::create($this->objFromFixture(DataObjectFake::class, 'three')),
+        ];
+
+        // A 2xx with an empty body acknowledges nothing, so every document was submitted and lost.
+        $this->mock->append(new Response(200, ['Content-Type' => 'application/json;charset=utf-8'], ''));
+
+        $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
+        $indexData->withIndexContext(
+            function (IndexData $index) use ($documents): void {
+                $this->searchService->addDocuments('content', $documents);
+            }
+        );
+
+        $failures = IndexingFailure::get();
+        $this->assertCount(count($documents), $failures);
+
+        foreach ($failures as $failure) {
+            $this->assertSame(IndexingFailure::REASON_UNACKNOWLEDGED, $failure->ReasonType);
+        }
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
