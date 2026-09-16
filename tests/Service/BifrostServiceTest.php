@@ -1277,6 +1277,16 @@ class BifrostServiceTest extends SapphireTest
         // search-client-php does not throw on an error response, so the status is what marks the batch failed.
         $this->mock->append(new Response(500, [], 'Internal server error'));
 
+        $mockLogger = $this->getMockBuilder(Logger::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['error'])
+            ->getMock();
+
+        Injector::inst()->registerService($mockLogger, LoggerInterface::class);
+        $mockLogger->expects($this->once())
+            ->method('error')
+            ->with($this->stringContains('HTTP 500'));
+
         $resultIds = [];
         $indexData = $this->searchService->getConfiguration()->getIndexDataForSuffix('content');
         $indexData->withIndexContext(

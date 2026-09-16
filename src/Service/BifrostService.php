@@ -158,9 +158,18 @@ class BifrostService implements IndexingInterface
         if ($status >= 400) {
             // search-client-php does not throw on error responses, so without this a non-2xx status
             // would be parsed as an empty body and pass silently. Record every submitted document.
+            $message = sprintf('Engine returned HTTP %d: %s', $status, trim((string) $response->getBody()));
+
+            Injector::inst()->get(LoggerInterface::class)->error(sprintf(
+                'Failed to add %d document(s) to index "%s". %s',
+                count($sentIds),
+                $indexSuffix,
+                $message
+            ));
+
             $this->recordFailures($failureService, $documentsByIdentifier, $sentIds, $indexSuffix, [
                 'reason' => IndexingFailure::REASON_EXCEPTION,
-                'message' => sprintf('Engine returned HTTP %d: %s', $status, trim((string) $response->getBody())),
+                'message' => $message,
             ]);
 
             return [];
